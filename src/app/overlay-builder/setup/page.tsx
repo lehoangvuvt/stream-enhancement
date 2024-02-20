@@ -15,7 +15,7 @@ import {
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
 import OBSWebSocket from "obs-websocket-js";
 import { BrowserInputSettings } from "@/app/types/obs.types";
-import { exportComponentAsJPEG } from "react-component-export-image";
+// import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
 
 const Container = styled.div`
@@ -366,9 +366,9 @@ const SetupPage = () => {
 
   const downloadLayout = async () => {
     if (exportContainerRef && exportContainerRef.current) {
-      exportComponentAsJPEG(exportContainerRef, {
-        html2CanvasOptions: {},
-      });
+      // exportComponentAsJPEG(exportContainerRef, {
+      //   html2CanvasOptions: {},
+      // });
     }
   };
 
