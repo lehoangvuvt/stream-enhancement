@@ -25,4 +25,9 @@ export type ImageElement = {
   coords: XYCoord | null;
 };
 
+export enum CURSOR_TOOL_OPTIONS {
+  DEFAULT,
+  ZONE_SELECT,
+}
+
 export type Element = TextElement | ImageElement;

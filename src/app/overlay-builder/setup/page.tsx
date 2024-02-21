@@ -9,6 +9,7 @@ import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import {
+  CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
   ImageElement,
@@ -191,11 +192,6 @@ export type OverlayMetadata = {
   elements: Element[];
   lastEleNo: number | null;
 };
-
-export enum CURSOR_TOOL_OPTIONS {
-  DEFAULT,
-  ZONE_SELECT,
-}
 
 const SetupPage = () => {
   const exportContainerRef = useRef<any>(null);

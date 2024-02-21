@@ -2,10 +2,10 @@
 
 import { XYCoord, useDrop } from "react-dnd";
 import styled from "styled-components";
-import { CURSOR_TOOL_OPTIONS, OverlayMetadata } from "../../page";
+import { OverlayMetadata } from "../../page";
 import OverlayElement from "./components/overlay-element";
 import { MouseEvent, useEffect, useState } from "react";
-import { ELEMENT_TYPES, Element } from "@/app/types/element.types";
+import { CURSOR_TOOL_OPTIONS, ELEMENT_TYPES, Element } from "@/app/types/element.types";
 import ElementContextMenu from "./components/element-context-menu";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
@@ -202,7 +202,7 @@ const OverlayView: React.FC<Props> = ({
       <Container
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            setInSelectZoneIds([])
+            setInSelectZoneIds([]);
             selectElement("");
             setSelectedEleId("");
             setOpenContextMenu(false);
