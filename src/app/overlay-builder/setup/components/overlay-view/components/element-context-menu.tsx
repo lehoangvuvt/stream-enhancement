@@ -1,5 +1,7 @@
 "use client";
 
+import { Element } from "@/app/types/element.types";
+import { MouseEvent } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -40,15 +42,34 @@ const ContextMenuItem = styled.div`
     background-color: #0099ff;
     color: white;
   }
+  &.disabled {
+    &:hover {
+      background-color: transparent;
+    }
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.6);
+  }
 `;
 
 type Props = {
   x: number;
   y: number;
+  selectEleId: string;
   deleteElement: () => void;
+  copyElement: () => void;
+  pasteElement: (cord: { x: number; y: number }) => void;
+  copiedElement: Element | null;
 };
 
-const ElementContextMenu: React.FC<Props> = ({ x, y, deleteElement }) => {
+const ElementContextMenu: React.FC<Props> = ({
+  x,
+  y,
+  selectEleId,
+  deleteElement,
+  copyElement,
+  pasteElement,
+  copiedElement,
+}) => {
   return (
     <Container
       style={{
@@ -56,8 +77,18 @@ const ElementContextMenu: React.FC<Props> = ({ x, y, deleteElement }) => {
         top: y + "px",
       }}
     >
-      <ContextMenuItem onClick={deleteElement}>Delete</ContextMenuItem>
-      <ContextMenuItem>Copy</ContextMenuItem>
+      {selectEleId !== "" && (
+        <>
+          <ContextMenuItem onClick={deleteElement}>Delete</ContextMenuItem>
+          <ContextMenuItem onClick={copyElement}>Copy</ContextMenuItem>
+        </>
+      )}
+      <ContextMenuItem
+        className={copiedElement ? "" : "disabled"}
+        onClick={(e: MouseEvent) => pasteElement({ x: e.pageX, y: e.pageY })}
+      >
+        Paste here
+      </ContextMenuItem>
     </Container>
   );
 };

@@ -6,6 +6,8 @@ import OverlayView from "./components/overlay-view";
 import { useEffect, useRef, useState } from "react";
 import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
+import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
+import AdsClickIcon from "@mui/icons-material/AdsClick";
 import {
   ELEMENT_TYPES,
   Element,
@@ -27,20 +29,21 @@ const Container = styled.div`
 
 const Header = styled.div`
   width: 100%;
-  height: 60px;
-  background-color: white;
+  height: 45px;
+  background-color: #2c2c2c;
   z-index: 1;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   box-sizing: border-box;
   padding: 0px 25px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.05);
   gap: 10px;
   button {
-    padding: 10px 15px;
-    border-radius: 4px;
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 2px;
     cursor: pointer;
     color: white;
     border: none;
@@ -48,33 +51,58 @@ const Header = styled.div`
     font-weight: 600;
     &:nth-child(1) {
       color: white;
-      background: #8e2de2; /* fallback for old browsers */
-      background: -webkit-linear-gradient(
-        to right,
-        #4a00e0,
-        #8e2de2
-      ); /* Chrome 10-25, Safari 5.1-6 */
-      background: linear-gradient(
-        to right,
-        #4a00e0,
-        #8e2de2
-      ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      background: #0099ff;
     }
     &:nth-child(2) {
       color: white;
-      background: #8e2de2; /* fallback for old browsers */
-      background: -webkit-linear-gradient(
-        to right,
-        #4a00e0,
-        #8e2de2
-      ); /* Chrome 10-25, Safari 5.1-6 */
-      background: linear-gradient(
-        to right,
-        #4a00e0,
-        #8e2de2
-      ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      background: #0099ff;
     }
   }
+`;
+
+const HeaderLeft = styled.div`
+  width: 18%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const HeaderCenter = styled.div`
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  div {
+    height: 100%;
+    aspect-ratio: 1.15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: default;
+    transition: all 0.1s ease;
+    color: white;
+    &.selected {
+      background-color: #0099ff;
+      color: white;
+      &:hover {
+        background-color: #0099ff;
+      }
+    }
+    &:hover {
+      background-color: black;
+    }
+  }
+`;
+
+const HeaderRight = styled.div`
+  width: 18%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 `;
 
 const Body = styled.div`
@@ -87,7 +115,6 @@ const Body = styled.div`
 const LeftPanel = styled.div`
   width: 18%;
   height: 100%;
-
   display: flex;
   flex-flow: column;
   align-items: center;
@@ -162,17 +189,27 @@ export type OverlayMetadata = {
   background_url: string;
   background_ratio: [number, number];
   elements: Element[];
+  lastEleNo: number | null;
 };
+
+export enum CURSOR_TOOL_OPTIONS {
+  DEFAULT,
+  ZONE_SELECT,
+}
 
 const SetupPage = () => {
   const exportContainerRef = useRef<any>(null);
   const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
+  const [currentCursorToolOption, setCurrentCursorToolOpt] =
+    useState<CURSOR_TOOL_OPTIONS>(CURSOR_TOOL_OPTIONS.DEFAULT);
   const [isConnected, setConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
+  const [copiedElement, setCopiedElement] = useState<Element | null>(null);
   const [overlayMetadata, setOverlayMetadata] = useState<OverlayMetadata>({
     background_ratio: [16, 9],
     background_url: "",
     elements: [],
+    lastEleNo: null,
   });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
@@ -218,23 +255,33 @@ const SetupPage = () => {
       opacity: 1,
       text: "New Text",
       type: ELEMENT_TYPES.TEXT,
-      id: `element_${updatedOverlayMD.elements.length}`,
+      id: updatedOverlayMD.lastEleNo
+        ? `element_${updatedOverlayMD.lastEleNo + 1}`
+        : `element_1`,
     };
+    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
+      ? updatedOverlayMD.lastEleNo + 1
+      : 1;
     updatedOverlayMD.elements.push(textItem);
     setOverlayMetadata(updatedOverlayMD);
   };
 
   const addImage = (coords: XYCoord | null) => {
     const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const textItem: ImageElement = {
+    const imageItem: ImageElement = {
       coords,
       url: "",
       type: ELEMENT_TYPES.IMAGE,
       width: 100,
       height: 100,
-      id: `element_${updatedOverlayMD.elements.length}`,
+      id: updatedOverlayMD.lastEleNo
+        ? `element_${updatedOverlayMD.lastEleNo + 1}`
+        : `element_1`,
     };
-    updatedOverlayMD.elements.push(textItem);
+    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
+      ? updatedOverlayMD.lastEleNo + 1
+      : 1;
+    updatedOverlayMD.elements.push(imageItem);
     setOverlayMetadata(updatedOverlayMD);
   };
 
@@ -266,10 +313,43 @@ const SetupPage = () => {
 
   const removeElement = (elementId: string) => {
     const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const index = parseInt(elementId.split("_")[1]);
+
     updatedOverlayMD.elements = updatedOverlayMD.elements.filter(
-      (_, i) => i !== index
+      (element) => element.id !== elementId
     );
+    setOverlayMetadata(updatedOverlayMD);
+  };
+
+  const copyElement = (elementId: string) => {
+    const copiedElement =
+      overlayMetadata?.elements.find((e) => e.id === elementId) ?? null;
+    setCopiedElement(copiedElement);
+  };
+
+  const pasteElement = (coord: { x: number; y: number }) => {
+    const updatedOverlayMD = Object.assign({}, overlayMetadata);
+    if (!copiedElement) return;
+    switch (copiedElement.type) {
+      case ELEMENT_TYPES.IMAGE:
+        const imageItem: ImageElement = Object.assign({}, copiedElement);
+        imageItem.id = updatedOverlayMD.lastEleNo
+          ? `element_${updatedOverlayMD.lastEleNo + 1}`
+          : `element_1`;
+        imageItem.coords = { x: coord.x, y: coord.y };
+        updatedOverlayMD.elements.push(imageItem);
+        break;
+      case ELEMENT_TYPES.TEXT:
+        const textItem: TextElement = Object.assign({}, copiedElement);
+        textItem.id = updatedOverlayMD.lastEleNo
+          ? `element_${updatedOverlayMD.lastEleNo + 1}`
+          : `element_1`;
+        textItem.coords = { x: coord.x, y: coord.y };
+        updatedOverlayMD.elements.push(textItem);
+        break;
+    }
+    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
+      ? updatedOverlayMD.lastEleNo + 1
+      : 1;
     setOverlayMetadata(updatedOverlayMD);
   };
 
@@ -387,8 +467,43 @@ const SetupPage = () => {
   return (
     <Container>
       <Header>
-        <button onClick={downloadLayout}>Download layout</button>
-        <button onClick={applyLayout}>Áp dụng layout</button>
+        <HeaderLeft></HeaderLeft>
+        <HeaderCenter>
+          <div
+            onClick={() => {
+              if (currentCursorToolOption !== CURSOR_TOOL_OPTIONS.DEFAULT) {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
+              }
+            }}
+            className={
+              currentCursorToolOption === CURSOR_TOOL_OPTIONS.DEFAULT
+                ? "selected"
+                : ""
+            }
+          >
+            <AdsClickIcon color="inherit" fontSize="inherit" />
+          </div>
+          <div
+            onClick={() => {
+              if (currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.ZONE_SELECT);
+              } else {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
+              }
+            }}
+            className={
+              currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
+                ? "selected"
+                : ""
+            }
+          >
+            <HighlightAltIcon color="inherit" fontSize="inherit" />
+          </div>
+        </HeaderCenter>
+        <HeaderRight>
+          <button onClick={downloadLayout}>Tải layout</button>
+          <button onClick={applyLayout}>Áp dụng layout</button>
+        </HeaderRight>
       </Header>
       <Body>
         <LeftPanel>
@@ -417,6 +532,8 @@ const SetupPage = () => {
         </LeftPanel>
         <Center>
           <OverlayView
+            currentCursorToolOption={currentCursorToolOption}
+            copiedElement={copiedElement}
             key={
               overlayMetadata.background_url + overlayMetadata.elements.length
             }
@@ -424,6 +541,8 @@ const SetupPage = () => {
             exportContainerRef={exportContainerRef}
             selectElement={handleSelectElement}
             removeElement={removeElement}
+            copyElement={copyElement}
+            pasteElement={pasteElement}
             updateElementCoords={updateElementCoords}
             addText={(coords) => addText(coords)}
             addImage={(coords) => addImage(coords)}

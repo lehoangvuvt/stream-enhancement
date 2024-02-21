@@ -2,10 +2,10 @@
 
 import { XYCoord, useDrop } from "react-dnd";
 import styled from "styled-components";
-import { OverlayMetadata } from "../../page";
+import { CURSOR_TOOL_OPTIONS, OverlayMetadata } from "../../page";
 import OverlayElement from "./components/overlay-element";
-import { useEffect, useState } from "react";
-import { ELEMENT_TYPES } from "@/app/types/element.types";
+import { MouseEvent, useEffect, useState } from "react";
+import { ELEMENT_TYPES, Element } from "@/app/types/element.types";
 import ElementContextMenu from "./components/element-context-menu";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
@@ -19,10 +19,17 @@ const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
   position: relative;
 `;
 
+const SelectZone = styled.div`
+  border: 1px solid rgba(40, 67, 135, 1);
+  background-color: rgba(40, 67, 135, 0.5);
+  transform-origin: right;
+`;
+
 type Props = {
   overlayMetadata: OverlayMetadata;
   updateElementCoords: (newCoords: XYCoord, elementId: string) => void;
   removeElement: (elementId: string) => void;
+  copyElement: (elementId: string) => void;
   addText: (coords: XYCoord | null) => void;
   addImage: (coords: XYCoord | null) => void;
   selectElement: (elementId: string) => void;
@@ -31,22 +38,37 @@ type Props = {
     elementId: string
   ) => void;
   exportContainerRef: any;
+  pasteElement: (cord: { x: number; y: number }) => void;
+  copiedElement: Element | null;
+  currentCursorToolOption: CURSOR_TOOL_OPTIONS;
 };
 
 const OverlayView: React.FC<Props> = ({
   overlayMetadata,
   updateElementCoords,
   removeElement,
+  copyElement,
+  pasteElement,
   addText,
   addImage,
   selectElement,
   updateElementSize,
   exportContainerRef,
+  copiedElement,
+  currentCursorToolOption,
 }) => {
   const [selectedEleId, setSelectedEleId] = useState("");
+  const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
   const [isOpenContextMenu, setOpenContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const { background_ratio, background_url } = overlayMetadata;
+  const [isPress, setIsPress] = useState(false);
+  const [startCoord, setStartCoord] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [endCord, setEndCoord] = useState<{ x: number; y: number } | null>(
+    null
+  );
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: ["TEXT", "IMAGE"],
     drop: (item, monitor) => {
@@ -79,8 +101,82 @@ const OverlayView: React.FC<Props> = ({
     return () => window.removeEventListener("keydown", handleOnKeyDown);
   }, []);
 
+  const handleMouseDown = (e: MouseEvent) => {
+    if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
+      setIsPress(true);
+      if (!startCoord) {
+        setStartCoord({ x: e.pageX, y: e.pageY });
+      }
+      setEndCoord({ x: e.pageX, y: e.pageY });
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (
+      isPress &&
+      currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
+    ) {
+      setEndCoord({ x: e.pageX, y: e.pageY });
+    }
+  };
+
+  const handleMouseUp = (e: MouseEvent) => {
+    if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
+      setIsPress(false);
+      setStartCoord(null);
+      setEndCoord(null);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      isPress &&
+      startCoord &&
+      endCord &&
+      currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
+    ) {
+      const startX = startCoord.x;
+      const startY = startCoord.y;
+      const endX = endCord.x;
+      const endY = endCord.y;
+      const minX = startX < endX ? startX : endX;
+      const maxX = startX < endX ? endX : startX;
+      const minY = startY < endY ? startY : endY;
+      const maxY = startY < endY ? endY : startY;
+      const inSelectZoneIds = overlayMetadata.elements
+        .filter(
+          (element) =>
+            element.coords &&
+            element.coords.x -
+              document.getElementById(element.id)!.offsetWidth / 2 >=
+              minX &&
+            element.coords.x -
+              document.getElementById(element.id)!.offsetWidth / 2 <=
+              maxX &&
+            element.coords.y -
+              document.getElementById(element.id)!.offsetHeight / 2 >=
+              minY &&
+            element.coords.y -
+              document.getElementById(element.id)!.offsetHeight / 2 <=
+              maxY
+        )
+        .map((element) => element.id);
+      setInSelectZoneIds(inSelectZoneIds);
+    }
+  }, [isPress, startCoord, endCord, currentCursorToolOption]);
+
   return (
     <div
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseDown={handleMouseDown}
+      onContextMenu={(e: MouseEvent) => {
+        if (selectedEleId !== "") {
+          setSelectedEleId("");
+        }
+        setContextMenuPos({ x: e.pageX, y: e.pageY });
+        setOpenContextMenu(true);
+      }}
       style={{
         width: "90%",
         display: "flex",
@@ -89,9 +185,24 @@ const OverlayView: React.FC<Props> = ({
       }}
       ref={exportContainerRef}
     >
+      {isPress && startCoord && endCord && (
+        <SelectZone
+          style={{
+            position: "absolute",
+            top:
+              startCoord.y < endCord.y ? `${startCoord.y}px` : `${endCord.y}px`,
+            left:
+              startCoord.x < endCord.x ? `${startCoord.x}px` : `${endCord.x}px`,
+            width: `${Math.abs(startCoord.x - endCord.x)}px`,
+            height: `${Math.abs(startCoord.y - endCord.y)}px`,
+            zIndex: 10,
+          }}
+        />
+      )}
       <Container
         onClick={(e) => {
           if (e.target === e.currentTarget) {
+            setInSelectZoneIds([])
             selectElement("");
             setSelectedEleId("");
             setOpenContextMenu(false);
@@ -120,6 +231,7 @@ const OverlayView: React.FC<Props> = ({
             index={i}
             elementItem={element}
             selected={selectedEleId === element.id}
+            isInSelectZone={inSelectZoneIds.includes(element.id)}
             updateElementSize={(newSize) => {
               if (element.type === ELEMENT_TYPES.IMAGE) {
                 updateElementSize(newSize, element.id);
@@ -135,10 +247,19 @@ const OverlayView: React.FC<Props> = ({
 
       {isOpenContextMenu && (
         <ElementContextMenu
+          selectEleId={selectedEleId}
+          copiedElement={copiedElement}
+          pasteElement={(coord) => pasteElement(coord)}
+          copyElement={() => {
+            setSelectedEleId("");
+            setContextMenuPos({ x: 0, y: 0 });
+            setOpenContextMenu(false);
+            copyElement(selectedEleId);
+          }}
           deleteElement={() => {
             removeElement(selectedEleId);
           }}
-          key={contextMenuPos.x + "/" + contextMenuPos.y}
+          key={selectedEleId}
           x={contextMenuPos.x}
           y={contextMenuPos.y}
         />

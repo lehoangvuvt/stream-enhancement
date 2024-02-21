@@ -118,6 +118,7 @@ type Props = {
     element: Element
   ) => void;
   closeContextMenu: () => void;
+  isInSelectZone: boolean;
 };
 
 const OverlayElement: React.FC<Props> = ({
@@ -128,6 +129,7 @@ const OverlayElement: React.FC<Props> = ({
   updateElementSize,
   openContextMenu,
   closeContextMenu,
+  isInSelectZone,
   selected,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -294,15 +296,26 @@ const OverlayElement: React.FC<Props> = ({
           let height = elementItem.height;
           switch (resizeDirection) {
             case "left":
+              let newX = 0;
+              let newY = 0;
               if (e.pageX < containerRef.current.getBoundingClientRect().left) {
-                width =
-                  elementItem.width +
-                  (containerRef.current.getBoundingClientRect().left - e.pageX);
+                const addedWidth =
+                  containerRef.current.getBoundingClientRect().left - e.pageX;
+                width = elementItem.width + addedWidth;
+                if (elementItem.coords) {
+                  newX = containerRef.current.getBoundingClientRect().left;
+                  containerRef.current.getBoundingClientRect().left -
+                    addedWidth;
+                  newY = elementItem.coords.y;
+                }
               } else {
                 width =
                   elementItem.width -
                   (e.pageX - containerRef.current.getBoundingClientRect().left);
               }
+
+              updateCoords({ x: newX, y: newY }, index);
+              updateElementSize && updateElementSize({ width, height });
 
               break;
             case "top":
@@ -315,11 +328,9 @@ const OverlayElement: React.FC<Props> = ({
                   elementItem.height -
                   (e.pageY - containerRef.current.getBoundingClientRect().top);
               }
-
+              updateElementSize && updateElementSize({ width, height });
               break;
           }
-
-          updateElementSize && updateElementSize({ width, height });
         }
       }
     }
@@ -336,6 +347,7 @@ const OverlayElement: React.FC<Props> = ({
 
   return (
     <Container
+      id={elementItem.id}
       onClick={() => onClick()}
       onContextMenu={handleOpenContextMenu}
       ref={containerRef}
@@ -343,6 +355,7 @@ const OverlayElement: React.FC<Props> = ({
         zIndex: onDrag ? 2 : 1,
         left: left + "%",
         top: top + "%",
+        border: isInSelectZone ? "1px dashed red" : "none",
       }}
     >
       {selected && (
