@@ -227,7 +227,7 @@ const SetupPage = () => {
   );
 
   const setBackground = (item: TBackgroundItem) => {
-    const updatedOverlayMetaHistories = [...overlayMetaHistories];
+    let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
     if (updatedOverlayMetaHistories.length === 0) {
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -235,16 +235,31 @@ const SetupPage = () => {
         elements: [],
         lastEleNo: null,
       });
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
     } else {
-      const lastestOverlayMetaHistoryItem = Object.assign(
-        {},
-        overlayMetaHistories[overlayMetaHistories.length - 1]
-      );
-      lastestOverlayMetaHistoryItem.background_url = item.url;
-      updatedOverlayMetaHistories.push(lastestOverlayMetaHistoryItem);
+      if (currentHistoryIndex === overlayMetaHistories.length - 1) {
+        const lastestOverlayMetaHistoryItem = structuredClone(
+          overlayMetaHistories[overlayMetaHistories.length - 1]
+        );
+        lastestOverlayMetaHistoryItem.background_url = item.url;
+        updatedOverlayMetaHistories.push(lastestOverlayMetaHistoryItem);
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+      } else {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        const lastestOverlayMetaHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex]
+        );
+        lastestOverlayMetaHistoryItem.background_url = item.url;
+        updatedOverlayMetaHistories.push(lastestOverlayMetaHistoryItem);
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+      }
     }
-    setOverlayMetaHistories(updatedOverlayMetaHistories);
-    setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
   };
 
   const renderBackgrounds = () => {
@@ -476,36 +491,52 @@ const SetupPage = () => {
   };
 
   const copyElement = (elementId: string) => {
-    // const copiedElement =
-    //   overlayMetadata?.elements.find((e) => e.id === elementId) ?? null;
-    // setCopiedElement(copiedElement);
+    const copiedElement =
+      overlayMetaHistories[currentHistoryIndex].elements.find(
+        (e) => e.id === elementId
+      ) ?? null;
+    setCopiedElement(structuredClone(copiedElement));
   };
 
   const pasteElement = (coord: { x: number; y: number }) => {
-    // const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    // if (!copiedElement) return;
-    // switch (copiedElement.type) {
-    //   case ELEMENT_TYPES.IMAGE:
-    //     const imageItem: ImageElement = Object.assign({}, copiedElement);
-    //     imageItem.id = updatedOverlayMD.lastEleNo
-    //       ? `element_${updatedOverlayMD.lastEleNo + 1}`
-    //       : `element_1`;
-    //     imageItem.coords = { x: coord.x, y: coord.y };
-    //     updatedOverlayMD.elements.push(imageItem);
-    //     break;
-    //   case ELEMENT_TYPES.TEXT:
-    //     const textItem: TextElement = Object.assign({}, copiedElement);
-    //     textItem.id = updatedOverlayMD.lastEleNo
-    //       ? `element_${updatedOverlayMD.lastEleNo + 1}`
-    //       : `element_1`;
-    //     textItem.coords = { x: coord.x, y: coord.y };
-    //     updatedOverlayMD.elements.push(textItem);
-    //     break;
-    // }
-    // updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
-    //   ? updatedOverlayMD.lastEleNo + 1
-    //   : 1;
-    // setOverlayMetadata(updatedOverlayMD);
+    let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+    if (!copiedElement) return;
+    const lastEleNo =
+      updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+        .lastEleNo;
+    let pastedElement: any = null;
+    switch (copiedElement.type) {
+      case ELEMENT_TYPES.IMAGE:
+        pastedElement = structuredClone(copiedElement);
+        pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
+        pastedElement.coords = { x: coord.x, y: coord.y };
+        break;
+      case ELEMENT_TYPES.TEXT:
+        pastedElement = structuredClone(copiedElement);
+        pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
+        pastedElement.coords = { x: coord.x, y: coord.y };
+        break;
+    }
+    if (currentHistoryIndex < overlayMetaHistories.length - 1) {
+      updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+        0,
+        currentHistoryIndex + 1
+      );
+      const newOverlayHistoryItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+      newOverlayHistoryItem.elements.push(pastedElement);
+      updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+      setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+    } else {
+      const newOverlayHistoryItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+      newOverlayHistoryItem.elements.push(pastedElement);
+      updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    }
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
   };
 
   const handleSelectElement = (elementId: string) => {
