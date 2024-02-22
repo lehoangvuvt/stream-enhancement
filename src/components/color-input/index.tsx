@@ -52,7 +52,7 @@ const ColorInput: React.FC<Props> = ({ color, onChange }) => {
       {isOpenPicker && (
         <MyPicker
           color={color}
-          onChange={(colorResult: ColorResult) => {
+          onChangeComplete={(colorResult: ColorResult) => {
             onChange(colorResult.hex);
           }}
         />

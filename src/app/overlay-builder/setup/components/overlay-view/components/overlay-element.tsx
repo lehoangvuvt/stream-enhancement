@@ -3,7 +3,7 @@
 import { XYCoord } from "react-dnd";
 import styled from "styled-components";
 import { MouseEvent, PointerEvent, useEffect, useRef, useState } from "react";
-import { ELEMENT_TYPES, Element } from "@/app/types/element.types";
+import { CURSOR_TOOL_OPTIONS, ELEMENT_TYPES, Element } from "@/app/types/element.types";
 import Image from "next/image";
 
 const Container = styled.div`
@@ -119,6 +119,7 @@ type Props = {
   ) => void;
   closeContextMenu: () => void;
   isInSelectZone: boolean;
+  currentCursorToolOption: CURSOR_TOOL_OPTIONS
 };
 
 const OverlayElement: React.FC<Props> = ({
@@ -131,10 +132,11 @@ const OverlayElement: React.FC<Props> = ({
   closeContextMenu,
   isInSelectZone,
   selected,
+  currentCursorToolOption
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [left, setLeft] = useState(0);
-  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(-100);
+  const [top, setTop] = useState(-100);
   const [onDrag, setDrag] = useState(false);
   const [isDoubleClick, setDoubleClick] = useState(false);
   const [mousePress, setMousePress] = useState(false);
@@ -356,6 +358,7 @@ const OverlayElement: React.FC<Props> = ({
         left: left + "%",
         top: top + "%",
         border: isInSelectZone ? "1px dashed red" : "none",
+        pointerEvents: currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT ? 'all' : 'none'
       }}
     >
       {selected && (
@@ -381,6 +384,7 @@ const OverlayElement: React.FC<Props> = ({
           <MoveHandler
             style={{
               cursor: onDrag ? "grabbing" : "grab",
+              pointerEvents: currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT ? 'all' : 'none'
             }}
             onDoubleClick={() => setDoubleClick(true)}
             onClick={(e: any) => onClick()}

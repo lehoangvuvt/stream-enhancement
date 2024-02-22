@@ -4,8 +4,12 @@ import { XYCoord, useDrop } from "react-dnd";
 import styled from "styled-components";
 import { OverlayMetadata } from "../../page";
 import OverlayElement from "./components/overlay-element";
-import { MouseEvent, useEffect, useState } from "react";
-import { CURSOR_TOOL_OPTIONS, ELEMENT_TYPES, Element } from "@/app/types/element.types";
+import { MouseEvent, useCallback, useEffect, useState } from "react";
+import {
+  CURSOR_TOOL_OPTIONS,
+  ELEMENT_TYPES,
+  Element,
+} from "@/app/types/element.types";
 import ElementContextMenu from "./components/element-context-menu";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
@@ -23,6 +27,8 @@ const SelectZone = styled.div`
   border: 1px solid rgba(40, 67, 135, 1);
   background-color: rgba(40, 67, 135, 0.5);
   transform-origin: right;
+  user-select: none;
+  pointer-events: none;
 `;
 
 type Props = {
@@ -128,6 +134,37 @@ const OverlayView: React.FC<Props> = ({
     }
   };
 
+  const checkIfInside = (
+    ele: Element,
+    startX: number,
+    endX: number,
+    minX: number,
+    maxX: number,
+    maxY: number,
+    minY: number
+  ) => {
+    if (!ele.coords) return false;
+    const eleX = ele.coords.x;
+    const eleY = ele.coords?.y;
+    const eleWith = document.getElementById(ele.id)!.offsetWidth;
+    const eleHeight = document.getElementById(ele.id)!.offsetHeight;
+    if (startX !== endX) {
+      let isInsideX = false;
+      let isInsideY = false;
+      if (eleX - eleWith / 2 >= minX) {
+        isInsideX = eleX - eleWith / 2 < maxX;
+      } else {
+        isInsideX = eleX + eleWith / 2 > minX;
+      }
+      if (eleY - eleHeight / 2 >= minY) {
+        isInsideY = eleY - eleHeight / 2 < maxY;
+      } else {
+        isInsideY = eleY + eleHeight / 2 > minY;
+      }
+      return isInsideX && isInsideY;
+    }
+  };
+
   useEffect(() => {
     if (
       isPress &&
@@ -143,33 +180,28 @@ const OverlayView: React.FC<Props> = ({
       const maxX = startX < endX ? endX : startX;
       const minY = startY < endY ? startY : endY;
       const maxY = startY < endY ? endY : startY;
-      const inSelectZoneIds = overlayMetadata.elements
-        .filter(
-          (element) =>
-            element.coords &&
-            element.coords.x -
-              document.getElementById(element.id)!.offsetWidth / 2 >=
-              minX &&
-            element.coords.x -
-              document.getElementById(element.id)!.offsetWidth / 2 <=
-              maxX &&
-            element.coords.y -
-              document.getElementById(element.id)!.offsetHeight / 2 >=
-              minY &&
-            element.coords.y -
-              document.getElementById(element.id)!.offsetHeight / 2 <=
-              maxY
-        )
-        .map((element) => element.id);
+      let inSelectZoneIds: string[] = [];
+      overlayMetadata.elements.forEach((ele) => {
+        const isInside = checkIfInside(
+          ele,
+          startX,
+          endX,
+          minX,
+          maxX,
+          maxY,
+          minY
+        );
+        if (isInside) {
+          inSelectZoneIds.push(ele.id);
+        }
+      });
+
       setInSelectZoneIds(inSelectZoneIds);
     }
-  }, [isPress, startCoord, endCord, currentCursorToolOption]);
+  }, [isPress, startCoord, endCord, currentCursorToolOption, overlayMetadata]);
 
   return (
     <div
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseDown={handleMouseDown}
       onContextMenu={(e: MouseEvent) => {
         if (selectedEleId !== "") {
           setSelectedEleId("");
@@ -200,9 +232,14 @@ const OverlayView: React.FC<Props> = ({
         />
       )}
       <Container
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseDown={handleMouseDown}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            setInSelectZoneIds([]);
+            if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.DEFAULT) {
+              setInSelectZoneIds([]);
+            }
             selectElement("");
             setSelectedEleId("");
             setOpenContextMenu(false);
@@ -215,6 +252,7 @@ const OverlayView: React.FC<Props> = ({
         {/* {isActive ? "Release to drop" : "Drag a box here"} */}
         {overlayMetadata.elements.map((element, i) => (
           <OverlayElement
+            currentCursorToolOption={currentCursorToolOption}
             closeContextMenu={() => {
               setOpenContextMenu(false);
             }}

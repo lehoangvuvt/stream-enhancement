@@ -66,7 +66,17 @@ const HeaderLeft = styled.div`
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
+  box-sizing: border-box;
+  padding-right: 20px;
+  button {
+    width: 32% !important;
+    &.disabled {
+      filter: brightness(50%);
+      cursor: not-allowed;
+    }
+  }
 `;
 
 const HeaderCenter = styled.div`
@@ -201,20 +211,40 @@ const SetupPage = () => {
   const [isConnected, setConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const [copiedElement, setCopiedElement] = useState<Element | null>(null);
-  const [overlayMetadata, setOverlayMetadata] = useState<OverlayMetadata>({
-    background_ratio: [16, 9],
-    background_url: "",
-    elements: [],
-    lastEleNo: null,
-  });
+  const [overlayMetaHistories, setOverlayMetaHistories] = useState<
+    OverlayMetadata[]
+  >([
+    {
+      background_ratio: [16, 9],
+      background_url: "",
+      elements: [],
+      lastEleNo: null,
+    },
+  ]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   );
 
   const setBackground = (item: TBackgroundItem) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    updatedOverlayMD.background_url = item.url;
-    setOverlayMetadata(updatedOverlayMD);
+    const updatedOverlayMetaHistories = [...overlayMetaHistories];
+    if (updatedOverlayMetaHistories.length === 0) {
+      updatedOverlayMetaHistories.push({
+        background_ratio: [16, 9],
+        background_url: item.url,
+        elements: [],
+        lastEleNo: null,
+      });
+    } else {
+      const lastestOverlayMetaHistoryItem = Object.assign(
+        {},
+        overlayMetaHistories[overlayMetaHistories.length - 1]
+      );
+      lastestOverlayMetaHistoryItem.background_url = item.url;
+      updatedOverlayMetaHistories.push(lastestOverlayMetaHistoryItem);
+    }
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
+    setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
   };
 
   const renderBackgrounds = () => {
@@ -225,7 +255,10 @@ const SetupPage = () => {
             details={bgItem}
             key={bgItem.id}
             onSelect={(item) => setBackground(item)}
-            isSelected={overlayMetadata.background_url === bgItem.url}
+            isSelected={
+              overlayMetaHistories[currentHistoryIndex].background_url ===
+              bgItem.url
+            }
           />
         ))}
       </>
@@ -242,111 +275,237 @@ const SetupPage = () => {
   };
 
   const addText = (coords: XYCoord | null) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const textItem: TextElement = {
-      coords,
-      font_color: "#ffffff",
-      font_size: 20,
-      font_weight: 400,
-      opacity: 1,
-      text: "New Text",
-      type: ELEMENT_TYPES.TEXT,
-      id: updatedOverlayMD.lastEleNo
-        ? `element_${updatedOverlayMD.lastEleNo + 1}`
-        : `element_1`,
-    };
-    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
-      ? updatedOverlayMD.lastEleNo + 1
-      : 1;
-    updatedOverlayMD.elements.push(textItem);
-    setOverlayMetadata(updatedOverlayMD);
+    let updatedOverlayMetaHistories = [...overlayMetaHistories];
+    if (updatedOverlayMetaHistories.length === 0) {
+      const textItem: TextElement = {
+        coords,
+        font_color: "#ffffff",
+        font_size: 20,
+        font_weight: 400,
+        opacity: 1,
+        text: "New Text",
+        type: ELEMENT_TYPES.TEXT,
+        id: "element_1",
+      };
+      updatedOverlayMetaHistories.push({
+        background_ratio: [16, 9],
+        background_url: "",
+        elements: [textItem],
+        lastEleNo: 1,
+      });
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    } else {
+      const lastEleNo =
+        updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+          .lastEleNo;
+      const textItem: TextElement = {
+        coords,
+        font_color: "#ffffff",
+        font_size: 20,
+        font_weight: 400,
+        opacity: 1,
+        text: "New Text",
+        type: ELEMENT_TYPES.TEXT,
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
+      };
+      if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
+        updatedOverlayMetaHistories.push({
+          ...updatedOverlayMetaHistories[
+            updatedOverlayMetaHistories.length - 1
+          ],
+          elements: [
+            ...updatedOverlayMetaHistories[
+              updatedOverlayMetaHistories.length - 1
+            ].elements,
+            textItem,
+          ],
+          lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
+        });
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+      } else {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        const lastEleNo =
+          updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+            .lastEleNo;
+        updatedOverlayMetaHistories.push({
+          ...updatedOverlayMetaHistories[
+            updatedOverlayMetaHistories.length - 1
+          ],
+          elements: [
+            ...updatedOverlayMetaHistories[
+              updatedOverlayMetaHistories.length - 1
+            ].elements,
+            textItem,
+          ],
+          lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
+        });
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+      }
+    }
   };
 
   const addImage = (coords: XYCoord | null) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const imageItem: ImageElement = {
-      coords,
-      url: "",
-      type: ELEMENT_TYPES.IMAGE,
-      width: 100,
-      height: 100,
-      id: updatedOverlayMD.lastEleNo
-        ? `element_${updatedOverlayMD.lastEleNo + 1}`
-        : `element_1`,
-    };
-    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
-      ? updatedOverlayMD.lastEleNo + 1
-      : 1;
-    updatedOverlayMD.elements.push(imageItem);
-    setOverlayMetadata(updatedOverlayMD);
+    let updatedOverlayMetaHistories = [...overlayMetaHistories];
+    if (updatedOverlayMetaHistories.length === 0) {
+      const imageItem: ImageElement = {
+        coords,
+        url: "",
+        type: ELEMENT_TYPES.IMAGE,
+        width: 100,
+        height: 100,
+        id: `element_1`,
+      };
+      updatedOverlayMetaHistories.push({
+        background_ratio: [16, 9],
+        background_url: "",
+        elements: [imageItem],
+        lastEleNo: 1,
+      });
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    } else {
+      const lastEleNo =
+        updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+          .lastEleNo;
+      const imageItem: ImageElement = {
+        coords,
+        url: "",
+        type: ELEMENT_TYPES.IMAGE,
+        width: 100,
+        height: 100,
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
+      };
+      if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
+        updatedOverlayMetaHistories.push({
+          ...updatedOverlayMetaHistories[
+            updatedOverlayMetaHistories.length - 1
+          ],
+          elements: [
+            ...updatedOverlayMetaHistories[
+              updatedOverlayMetaHistories.length - 1
+            ].elements,
+            imageItem,
+          ],
+          lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
+        });
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+      } else {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        updatedOverlayMetaHistories.push({
+          ...updatedOverlayMetaHistories[
+            updatedOverlayMetaHistories.length - 1
+          ],
+          elements: [
+            ...updatedOverlayMetaHistories[
+              updatedOverlayMetaHistories.length - 1
+            ].elements,
+            imageItem,
+          ],
+          lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
+        });
+        setOverlayMetaHistories(updatedOverlayMetaHistories);
+        setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+      }
+    }
   };
 
   const updateElementCoords = (newCoords: XYCoord, elementId: string) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const index = updatedOverlayMD.elements.findIndex(
-      (ele) => ele.id === elementId
-    );
+    const updatedOverlayMetaHistories = [...overlayMetaHistories];
+    const index = updatedOverlayMetaHistories[
+      currentHistoryIndex
+    ].elements.findIndex((ele) => ele.id === elementId);
     if (index === -1) return;
-    updatedOverlayMD.elements[index].coords = newCoords;
-    setOverlayMetadata(updatedOverlayMD);
+    updatedOverlayMetaHistories[currentHistoryIndex].elements[index].coords =
+      newCoords;
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
   };
 
   const updateElementSize = (
     newSize: { width: number; height: number },
     elementId: string
   ) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    const index = updatedOverlayMD.elements.findIndex(
-      (ele) => ele.id === elementId
-    );
-    if (index === -1) return;
-    const imageElement = updatedOverlayMD.elements[index] as ImageElement;
-    imageElement.width = newSize.width;
-    imageElement.height = newSize.height;
-    updatedOverlayMD.elements[index] = imageElement;
-    setOverlayMetadata(updatedOverlayMD);
+    // const updatedOverlayMD = Object.assign({}, overlayMetadata);
+    // const index = updatedOverlayMD.elements.findIndex(
+    //   (ele) => ele.id === elementId
+    // );
+    // if (index === -1) return;
+    // const imageElement = updatedOverlayMD.elements[index] as ImageElement;
+    // imageElement.width = newSize.width;
+    // imageElement.height = newSize.height;
+    // updatedOverlayMD.elements[index] = imageElement;
+    // setOverlayMetadata(updatedOverlayMD);
   };
 
   const removeElement = (elementId: string) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-
-    updatedOverlayMD.elements = updatedOverlayMD.elements.filter(
-      (element) => element.id !== elementId
-    );
-    setOverlayMetadata(updatedOverlayMD);
+    let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+    if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
+      const newOverlayMetaItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+      newOverlayMetaItem.elements = newOverlayMetaItem.elements.filter(
+        (element) => element.id !== elementId
+      );
+      updatedOverlayMetaHistories.push(newOverlayMetaItem);
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    } else {
+      updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+        0,
+        currentHistoryIndex + 1
+      );
+      const newOverlayMetaItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+      newOverlayMetaItem.elements = newOverlayMetaItem.elements.filter(
+        (element) => element.id !== elementId
+      );
+      updatedOverlayMetaHistories.push(newOverlayMetaItem);
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+    }
   };
 
   const copyElement = (elementId: string) => {
-    const copiedElement =
-      overlayMetadata?.elements.find((e) => e.id === elementId) ?? null;
-    setCopiedElement(copiedElement);
+    // const copiedElement =
+    //   overlayMetadata?.elements.find((e) => e.id === elementId) ?? null;
+    // setCopiedElement(copiedElement);
   };
 
   const pasteElement = (coord: { x: number; y: number }) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    if (!copiedElement) return;
-    switch (copiedElement.type) {
-      case ELEMENT_TYPES.IMAGE:
-        const imageItem: ImageElement = Object.assign({}, copiedElement);
-        imageItem.id = updatedOverlayMD.lastEleNo
-          ? `element_${updatedOverlayMD.lastEleNo + 1}`
-          : `element_1`;
-        imageItem.coords = { x: coord.x, y: coord.y };
-        updatedOverlayMD.elements.push(imageItem);
-        break;
-      case ELEMENT_TYPES.TEXT:
-        const textItem: TextElement = Object.assign({}, copiedElement);
-        textItem.id = updatedOverlayMD.lastEleNo
-          ? `element_${updatedOverlayMD.lastEleNo + 1}`
-          : `element_1`;
-        textItem.coords = { x: coord.x, y: coord.y };
-        updatedOverlayMD.elements.push(textItem);
-        break;
-    }
-    updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
-      ? updatedOverlayMD.lastEleNo + 1
-      : 1;
-    setOverlayMetadata(updatedOverlayMD);
+    // const updatedOverlayMD = Object.assign({}, overlayMetadata);
+    // if (!copiedElement) return;
+    // switch (copiedElement.type) {
+    //   case ELEMENT_TYPES.IMAGE:
+    //     const imageItem: ImageElement = Object.assign({}, copiedElement);
+    //     imageItem.id = updatedOverlayMD.lastEleNo
+    //       ? `element_${updatedOverlayMD.lastEleNo + 1}`
+    //       : `element_1`;
+    //     imageItem.coords = { x: coord.x, y: coord.y };
+    //     updatedOverlayMD.elements.push(imageItem);
+    //     break;
+    //   case ELEMENT_TYPES.TEXT:
+    //     const textItem: TextElement = Object.assign({}, copiedElement);
+    //     textItem.id = updatedOverlayMD.lastEleNo
+    //       ? `element_${updatedOverlayMD.lastEleNo + 1}`
+    //       : `element_1`;
+    //     textItem.coords = { x: coord.x, y: coord.y };
+    //     updatedOverlayMD.elements.push(textItem);
+    //     break;
+    // }
+    // updatedOverlayMD.lastEleNo = updatedOverlayMD.lastEleNo
+    //   ? updatedOverlayMD.lastEleNo + 1
+    //   : 1;
+    // setOverlayMetadata(updatedOverlayMD);
   };
 
   const handleSelectElement = (elementId: string) => {
@@ -356,21 +515,50 @@ const SetupPage = () => {
   const getElementById = (elementId: string | null) => {
     if (!elementId || elementId === "") return null;
     return (
-      overlayMetadata.elements.find((element) => element.id === elementId) ??
-      null
+      overlayMetaHistories[currentHistoryIndex].elements.find(
+        (element) => element.id === elementId
+      ) ?? null
     );
   };
 
   const handleUpdateElement = (updatedElement: Element) => {
-    const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    for (let i = 0; i < updatedOverlayMD.elements.length; i++) {
-      const elementId = updatedOverlayMD.elements[i].id;
-      if (elementId === updatedElement.id) {
-        updatedOverlayMD.elements[i] = updatedElement;
-        break;
+    let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+    if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
+      const newOverlayMetaHistoryItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+
+      for (let i = 0; i < newOverlayMetaHistoryItem.elements.length; i++) {
+        const elementId = newOverlayMetaHistoryItem.elements[i].id;
+        if (elementId === updatedElement.id) {
+          newOverlayMetaHistoryItem.elements[i] = updatedElement;
+          break;
+        }
       }
+      updatedOverlayMetaHistories.push(newOverlayMetaHistoryItem);
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    } else {
+      updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+        0,
+        currentHistoryIndex + 1
+      );
+
+      const newOverlayMetaHistoryItem = structuredClone(
+        updatedOverlayMetaHistories[currentHistoryIndex]
+      );
+
+      for (let i = 0; i < newOverlayMetaHistoryItem.elements.length; i++) {
+        const elementId = newOverlayMetaHistoryItem.elements[i].id;
+        if (elementId === updatedElement.id) {
+          newOverlayMetaHistoryItem.elements[i] = updatedElement;
+          break;
+        }
+      }
+      updatedOverlayMetaHistories.push(newOverlayMetaHistoryItem);
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
     }
-    setOverlayMetadata(updatedOverlayMD);
   };
 
   useEffect(() => {
@@ -436,7 +624,10 @@ const SetupPage = () => {
   };
 
   const applyLayout = () => {
-    localStorage.setItem("layout", JSON.stringify(overlayMetadata));
+    localStorage.setItem(
+      "layout",
+      JSON.stringify(overlayMetaHistories[currentHistoryIndex])
+    );
     test();
   };
 
@@ -463,7 +654,30 @@ const SetupPage = () => {
   return (
     <Container>
       <Header>
-        <HeaderLeft></HeaderLeft>
+        <HeaderLeft>
+          <button
+            className={currentHistoryIndex <= 0 ? "disabled" : ""}
+            onClick={() =>
+              currentHistoryIndex > 0 &&
+              setCurrentHistoryIndex((prevIndex) => prevIndex - 1)
+            }
+          >
+            Undo
+          </button>
+          <button
+            className={
+              currentHistoryIndex >= overlayMetaHistories.length - 1
+                ? "disabled"
+                : ""
+            }
+            onClick={() =>
+              currentHistoryIndex < overlayMetaHistories.length - 1 &&
+              setCurrentHistoryIndex((prevIndex) => prevIndex + 1)
+            }
+          >
+            Redo
+          </button>
+        </HeaderLeft>
         <HeaderCenter>
           <div
             onClick={() => {
@@ -531,7 +745,8 @@ const SetupPage = () => {
             currentCursorToolOption={currentCursorToolOption}
             copiedElement={copiedElement}
             key={
-              overlayMetadata.background_url + overlayMetadata.elements.length
+              overlayMetaHistories[currentHistoryIndex].background_url +
+              overlayMetaHistories[currentHistoryIndex].elements.length
             }
             updateElementSize={updateElementSize}
             exportContainerRef={exportContainerRef}
@@ -542,7 +757,7 @@ const SetupPage = () => {
             updateElementCoords={updateElementCoords}
             addText={(coords) => addText(coords)}
             addImage={(coords) => addImage(coords)}
-            overlayMetadata={overlayMetadata}
+            overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
           />
         </Center>
         <Right>
