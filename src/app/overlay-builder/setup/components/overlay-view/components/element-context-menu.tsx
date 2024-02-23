@@ -5,13 +5,13 @@ import { MouseEvent } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
-  width: 200px;
+  width: 250px;
   background-color: #1e1e1e;
   position: absolute;
   z-index: 100;
   animation: ElementContextMenuAppear 0.1s ease;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 5px;
   transform-origin: top;
   color: white;
@@ -34,10 +34,20 @@ const ContextMenuItem = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  font-size: 13px;
-  padding: 5px 15px;
+  padding: 0px 15px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
+  display: flex;
+  p,
+  kbd {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 8px;
+  }
   &:hover {
     background-color: #0099ff;
     color: white;
@@ -79,15 +89,22 @@ const ElementContextMenu: React.FC<Props> = ({
     >
       {selectEleId !== "" && (
         <>
-          <ContextMenuItem onClick={deleteElement}>Delete</ContextMenuItem>
-          <ContextMenuItem onClick={copyElement}>Copy</ContextMenuItem>
+          <ContextMenuItem onClick={deleteElement}>
+            <p>Delete this element</p>
+            <kbd>Delete</kbd>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={copyElement}>
+            <p>Copy</p>
+            <kbd>Crl + C</kbd>
+          </ContextMenuItem>
         </>
       )}
       <ContextMenuItem
         className={copiedElement ? "" : "disabled"}
         onClick={(e: MouseEvent) => pasteElement({ x: e.pageX, y: e.pageY })}
       >
-        Paste here
+        <p>Paste here</p>
+        <kbd>Crl + V</kbd>
       </ContextMenuItem>
     </Container>
   );

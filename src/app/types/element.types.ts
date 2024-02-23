@@ -23,6 +23,7 @@ export type ImageElement = {
   width: number;
   height: number;
   coords: XYCoord | null;
+  rotate: number;
 };
 
 export enum CURSOR_TOOL_OPTIONS {

@@ -47,6 +47,8 @@ type Props = {
   pasteElement: (cord: { x: number; y: number }) => void;
   copiedElement: Element | null;
   currentCursorToolOption: CURSOR_TOOL_OPTIONS;
+  inSelectZoneIds: string[];
+  setInSelectZoneIds: (ids: string[]) => void;
 };
 
 const OverlayView: React.FC<Props> = ({
@@ -62,9 +64,10 @@ const OverlayView: React.FC<Props> = ({
   exportContainerRef,
   copiedElement,
   currentCursorToolOption,
+  inSelectZoneIds,
+  setInSelectZoneIds,
 }) => {
   const [selectedEleId, setSelectedEleId] = useState("");
-  const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
   const [isOpenContextMenu, setOpenContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const { background_ratio, background_url } = overlayMetadata;
@@ -95,17 +98,6 @@ const OverlayView: React.FC<Props> = ({
   }));
 
   const isActive = canDrop && isOver;
-
-  const handleOnKeyDown = (e: KeyboardEvent) => {
-    // if (e.key === "Delete" && selectedEleId !== "") {
-    //   removeElement(selectedEleId);
-    // }
-  };
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleOnKeyDown);
-    return () => window.removeEventListener("keydown", handleOnKeyDown);
-  }, []);
 
   const handleMouseDown = (e: MouseEvent) => {
     if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
@@ -195,10 +187,16 @@ const OverlayView: React.FC<Props> = ({
           inSelectZoneIds.push(ele.id);
         }
       });
-
       setInSelectZoneIds(inSelectZoneIds);
     }
-  }, [isPress, startCoord, endCord, currentCursorToolOption, overlayMetadata]);
+  }, [
+    isPress,
+    startCoord,
+    endCord,
+    currentCursorToolOption,
+    overlayMetadata,
+    setInSelectZoneIds,
+  ]);
 
   return (
     <div
