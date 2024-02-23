@@ -20,6 +20,7 @@ import OBSWebSocket from "obs-websocket-js";
 import { BrowserInputSettings } from "@/app/types/obs.types";
 // import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
+import useKeyboard from "@/hooks/useKeyboard";
 
 const Container = styled.div`
   height: 100%;
@@ -204,6 +205,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const { pressedKies, setPressedKies } = useKeyboard();
   const exportContainerRef = useRef<any>(null);
   const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
   const [currentCursorToolOption, setCurrentCursorToolOpt] =
@@ -226,6 +228,7 @@ const SetupPage = () => {
     null
   );
   const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
+  const [copiedElements, setCopiedElements] = useState<Element[]>([]);
 
   const setBackground = (item: TBackgroundItem) => {
     let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
@@ -505,33 +508,106 @@ const SetupPage = () => {
     [overlayMetaHistories]
   );
 
-  const copyElement = (elementId: string) => {
-    const copiedElement =
-      overlayMetaHistories[currentHistoryIndex].elements.find(
-        (e) => e.id === elementId
-      ) ?? null;
-    setCopiedElement(structuredClone(copiedElement));
-  };
+  const copyElement = useCallback(
+    (elementId: string) => {
+      const copiedElement =
+        overlayMetaHistories[currentHistoryIndex].elements.find(
+          (e) => e.id === elementId
+        ) ?? null;
+      setCopiedElement(structuredClone(copiedElement));
+    },
+    [overlayMetaHistories, currentHistoryIndex]
+  );
 
-  const pasteElement = (coord: { x: number; y: number }) => {
+  const pasteElement = useCallback(
+    (coord: { x: number; y: number }) => {
+      let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+      if (!copiedElement) return;
+      const lastEleNo =
+        updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+          .lastEleNo;
+      let pastedElement: any = null;
+      switch (copiedElement.type) {
+        case ELEMENT_TYPES.IMAGE:
+          pastedElement = structuredClone(copiedElement);
+          pastedElement.id = lastEleNo
+            ? `element_${lastEleNo + 1}`
+            : `element_1`;
+          pastedElement.coords = { x: coord.x, y: coord.y };
+          break;
+        case ELEMENT_TYPES.TEXT:
+          pastedElement = structuredClone(copiedElement);
+          pastedElement.id = lastEleNo
+            ? `element_${lastEleNo + 1}`
+            : `element_1`;
+          pastedElement.coords = { x: coord.x, y: coord.y };
+          break;
+      }
+      if (currentHistoryIndex < overlayMetaHistories.length - 1) {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        const newOverlayHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex]
+        );
+        newOverlayHistoryItem.lastEleNo = lastEleNo ? lastEleNo + 1 : 1;
+        newOverlayHistoryItem.elements.push(pastedElement);
+        updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+        setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+      } else {
+        const newOverlayHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex]
+        );
+        newOverlayHistoryItem.lastEleNo = lastEleNo ? lastEleNo + 1 : 1;
+        newOverlayHistoryItem.elements.push(pastedElement);
+        updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+        setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+      }
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+    },
+    [overlayMetaHistories, currentHistoryIndex, copiedElement]
+  );
+
+  const pasteMultipleElements = useCallback(() => {
     let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
-    if (!copiedElement) return;
+    if (copiedElements.length === 0) return;
     const lastEleNo =
       updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
         .lastEleNo;
-    let pastedElement: any = null;
-    switch (copiedElement.type) {
-      case ELEMENT_TYPES.IMAGE:
-        pastedElement = structuredClone(copiedElement);
-        pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
-        pastedElement.coords = { x: coord.x, y: coord.y };
-        break;
-      case ELEMENT_TYPES.TEXT:
-        pastedElement = structuredClone(copiedElement);
-        pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
-        pastedElement.coords = { x: coord.x, y: coord.y };
-        break;
+    const pastedElements: Element[] = [];
+    for (let i = 0; i < copiedElements.length; ++i) {
+      const copiedElement = copiedElements[i];
+      switch (copiedElement.type) {
+        case ELEMENT_TYPES.IMAGE:
+          const imageElement = structuredClone(copiedElement);
+          imageElement.id = lastEleNo
+            ? `element_${lastEleNo + 1 + i}`
+            : i === 0
+            ? `element_1`
+            : `element_${i + 1}`;
+          imageElement.coords = {
+            x: copiedElement.coords!.x + 25,
+            y: copiedElement.coords!.y + 25,
+          };
+          pastedElements.push(imageElement);
+          break;
+        case ELEMENT_TYPES.TEXT:
+          const textElement = structuredClone(copiedElement);
+          textElement.id = lastEleNo
+            ? `element_${lastEleNo + 1 + i}`
+            : i === 0
+            ? `element_1`
+            : `element_${i + 1}`;
+          textElement.coords = {
+            x: copiedElement.coords!.x + 25,
+            y: copiedElement.coords!.y + 25,
+          };
+          pastedElements.push(textElement);
+          break;
+      }
     }
+
     if (currentHistoryIndex < overlayMetaHistories.length - 1) {
       updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
         0,
@@ -540,21 +616,31 @@ const SetupPage = () => {
       const newOverlayHistoryItem = structuredClone(
         updatedOverlayMetaHistories[currentHistoryIndex]
       );
-      newOverlayHistoryItem.lastEleNo = lastEleNo ? lastEleNo + 1 : 1;
-      newOverlayHistoryItem.elements.push(pastedElement);
+      newOverlayHistoryItem.lastEleNo = parseInt(
+        pastedElements[pastedElements.length - 1].id.split("_")[1]
+      );
+      newOverlayHistoryItem.elements = [
+        ...newOverlayHistoryItem.elements,
+        ...pastedElements,
+      ];
       updatedOverlayMetaHistories.push(newOverlayHistoryItem);
       setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
     } else {
       const newOverlayHistoryItem = structuredClone(
         updatedOverlayMetaHistories[currentHistoryIndex]
       );
-      newOverlayHistoryItem.lastEleNo = lastEleNo ? lastEleNo + 1 : 1;
-      newOverlayHistoryItem.elements.push(pastedElement);
+      newOverlayHistoryItem.lastEleNo = parseInt(
+        pastedElements[pastedElements.length - 1].id.split("_")[1]
+      );
+      newOverlayHistoryItem.elements = [
+        ...newOverlayHistoryItem.elements,
+        ...pastedElements,
+      ];
       updatedOverlayMetaHistories.push(newOverlayHistoryItem);
       setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
     }
     setOverlayMetaHistories(updatedOverlayMetaHistories);
-  };
+  }, [overlayMetaHistories, currentHistoryIndex, copiedElements]);
 
   const handleSelectElement = (elementId: string) => {
     setSelectedElementId(elementId);
@@ -692,29 +778,76 @@ const SetupPage = () => {
     if (event.stopPropagation != undefined) event.stopPropagation();
   }
 
+  const copyMultipleElements = useCallback(
+    (ids: string[]) => {
+      const copiedElements = overlayMetaHistories[
+        currentHistoryIndex
+      ].elements.filter((e) => ids.includes(e.id));
+      if (copiedElements.length === 0) return;
+      setCopiedElements(copiedElements);
+    },
+    [overlayMetaHistories, currentHistoryIndex]
+  );
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === "Delete" &&
-        (selectedElementId || inSelectZoneIds.length > 0)
-      ) {
-        if (selectedElementId) {
-          removeElement(selectedElementId);
+    if (pressedKies.length > 0) {
+      if (pressedKies.length === 1) {
+        if (
+          pressedKies[0] === "Delete" &&
+          (selectedElementId || inSelectZoneIds.length > 0)
+        ) {
+          if (selectedElementId) {
+            removeElement(selectedElementId);
+          }
+          if (inSelectZoneIds.length > 0) {
+            removeMultipleElements(inSelectZoneIds);
+          }
         }
-        if (inSelectZoneIds.length > 0) {
-          removeMultipleElements(inSelectZoneIds);
+      } else {
+        if (
+          pressedKies[0] === "Control" &&
+          pressedKies[1] === "c" &&
+          (selectedElementId || inSelectZoneIds.length > 0)
+        ) {
+          if (selectedElementId) {
+            setCopiedElements([]);
+            copyElement(selectedElementId);
+          } else {
+            setCopiedElement(null);
+            copyMultipleElements(inSelectZoneIds);
+          }
+        }
+
+        if (
+          pressedKies[0] === "Control" &&
+          pressedKies[1] === "v" &&
+          (copiedElement || copiedElements.length > 0)
+        ) {
+          if (copiedElement) {
+            pasteElement({
+              x: copiedElement.coords!.x + 25,
+              y: copiedElement.coords!.y + 25,
+            });
+          } else {
+            pasteMultipleElements();
+          }
+          setPressedKies([]);
         }
       }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
+    }
   }, [
+    pressedKies,
     selectedElementId,
     inSelectZoneIds,
     removeElement,
     removeMultipleElements,
+    copyElement,
+    copiedElement,
+    pasteElement,
+    setPressedKies,
+    copyMultipleElements,
+    copiedElements,
+    pasteMultipleElements,
   ]);
 
   useEffect(() => {
@@ -727,6 +860,7 @@ const SetupPage = () => {
     <Container>
       <Header>
         <HeaderLeft>
+          s
           <button
             className={currentHistoryIndex <= 0 ? "disabled" : ""}
             onClick={() =>
@@ -816,7 +950,10 @@ const SetupPage = () => {
           {overlayMetaHistories[currentHistoryIndex] && (
             <OverlayView
               inSelectZoneIds={inSelectZoneIds}
-              setInSelectZoneIds={setInSelectZoneIds}
+              setInSelectZoneIds={(ids) => {
+                setSelectedElementId(null);
+                setInSelectZoneIds(ids);
+              }}
               currentCursorToolOption={currentCursorToolOption}
               copiedElement={copiedElement}
               key={currentHistoryIndex}
