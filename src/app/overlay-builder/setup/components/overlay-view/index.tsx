@@ -36,8 +36,8 @@ type Props = {
   updateElementCoords: (newCoords: XYCoord, elementId: string) => void;
   removeElement: (elementId: string) => void;
   copyElement: (elementId: string) => void;
-  addText: (coords: XYCoord | null) => void;
-  addImage: (coords: XYCoord | null) => void;
+  addText: (coords: XYCoord | null, relativeCoords: XYCoord | null) => void;
+  addImage: (coords: XYCoord | null, relativeCoords: XYCoord | null) => void;
   selectElement: (elementId: string) => void;
   updateElementSize: (
     newSize: { width: number; height: number },
@@ -45,10 +45,13 @@ type Props = {
   ) => void;
   exportContainerRef: any;
   pasteElement: (cord: { x: number; y: number }) => void;
+  pasteMultipleElements: (cord: { x: number; y: number }) => void;
   copiedElement: Element | null;
+  copiedElements: Element[];
   currentCursorToolOption: CURSOR_TOOL_OPTIONS;
   inSelectZoneIds: string[];
   setInSelectZoneIds: (ids: string[]) => void;
+  setCopyType: (type: "copy" | "cut") => void;
 };
 
 const OverlayView: React.FC<Props> = ({
@@ -57,15 +60,18 @@ const OverlayView: React.FC<Props> = ({
   removeElement,
   copyElement,
   pasteElement,
+  pasteMultipleElements,
   addText,
   addImage,
   selectElement,
   updateElementSize,
   exportContainerRef,
   copiedElement,
+  copiedElements,
   currentCursorToolOption,
   inSelectZoneIds,
   setInSelectZoneIds,
+  setCopyType,
 }) => {
   const [selectedEleId, setSelectedEleId] = useState("");
   const [isOpenContextMenu, setOpenContextMenu] = useState(false);
@@ -82,12 +88,26 @@ const OverlayView: React.FC<Props> = ({
     accept: ["TEXT", "IMAGE"],
     drop: (item, monitor) => {
       const type = monitor.getItemType();
+      const clientOffset = monitor.getClientOffset();
+      const dropElement = document.getElementById("drop-zone-element");
+      const relativeCoords: XYCoord = {
+        x: 0,
+        y: 0,
+      };
+      if (clientOffset && dropElement) {
+        relativeCoords.x =
+          clientOffset.x - dropElement.getBoundingClientRect().x;
+        relativeCoords.y =
+          clientOffset.y - dropElement.getBoundingClientRect().y;
+      }
       switch (type) {
         case "TEXT":
-          addText(monitor.getClientOffset());
+          addText(monitor.getClientOffset(), relativeCoords);
           break;
         case "IMAGE":
-          addImage(monitor.getClientOffset());
+          relativeCoords.x -= 50;
+          relativeCoords.y -= 50;
+          addImage(monitor.getClientOffset(), relativeCoords);
           break;
       }
     },
@@ -198,6 +218,15 @@ const OverlayView: React.FC<Props> = ({
     setInSelectZoneIds,
   ]);
 
+  const cutElement = () => {
+    setSelectedEleId("");
+    setContextMenuPos({ x: 0, y: 0 });
+    setOpenContextMenu(false);
+    setCopyType("cut");
+    copyElement(selectedEleId);
+    removeElement(selectedEleId);
+  };
+
   return (
     <div
       onContextMenu={(e: MouseEvent) => {
@@ -230,6 +259,7 @@ const OverlayView: React.FC<Props> = ({
         />
       )}
       <Container
+        id="drop-zone-element"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseDown={handleMouseDown}
@@ -285,13 +315,17 @@ const OverlayView: React.FC<Props> = ({
         <ElementContextMenu
           selectEleId={selectedEleId}
           copiedElement={copiedElement}
+          copiedElements={copiedElements}
           pasteElement={(coord) => pasteElement(coord)}
+          pasteMultipleElements={(coord) => pasteMultipleElements(coord)}
           copyElement={() => {
             setSelectedEleId("");
             setContextMenuPos({ x: 0, y: 0 });
             setOpenContextMenu(false);
+            setCopyType("copy");
             copyElement(selectedEleId);
           }}
+          cutElement={cutElement}
           deleteElement={() => {
             removeElement(selectedEleId);
           }}

@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import BackgroundItem, { TBackgroundItem } from "./components/background-item";
 import OverlayView from "./components/overlay-view";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
@@ -21,6 +21,7 @@ import { BrowserInputSettings } from "@/app/types/obs.types";
 // import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
 import useKeyboard from "@/hooks/useKeyboard";
+import useClipboard from "@/hooks/useClipboard";
 
 const Container = styled.div`
   height: 100%;
@@ -205,7 +206,9 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const { get: getCB, write: writeCB } = useClipboard();
   const { pressedKies, setPressedKies } = useKeyboard();
+  const [copyType, setCopyType] = useState<"copy" | "cut">("copy");
   const exportContainerRef = useRef<any>(null);
   const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
   const [currentCursorToolOption, setCurrentCursorToolOpt] =
@@ -213,6 +216,7 @@ const SetupPage = () => {
   const [isConnected, setConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
   const [copiedElement, setCopiedElement] = useState<Element | null>(null);
+  const [copiedElements, setCopiedElements] = useState<Element[]>([]);
   const [overlayMetaHistories, setOverlayMetaHistories] = useState<
     OverlayMetadata[]
   >([
@@ -228,7 +232,6 @@ const SetupPage = () => {
     null
   );
   const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
-  const [copiedElements, setCopiedElements] = useState<Element[]>([]);
 
   const setBackground = (item: TBackgroundItem) => {
     let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
@@ -293,11 +296,12 @@ const SetupPage = () => {
     );
   };
 
-  const addText = (coords: XYCoord | null) => {
+  const addText = (coords: XYCoord | null, relativeCoords: XYCoord | null) => {
     let updatedOverlayMetaHistories = [...overlayMetaHistories];
     if (updatedOverlayMetaHistories.length === 0) {
       const textItem: TextElement = {
         coords,
+        relativeCoords,
         font_color: "#ffffff",
         font_size: 20,
         font_weight: 400,
@@ -320,6 +324,7 @@ const SetupPage = () => {
           .lastEleNo;
       const textItem: TextElement = {
         coords,
+        relativeCoords,
         font_color: "#ffffff",
         font_size: 20,
         font_weight: 400,
@@ -369,11 +374,12 @@ const SetupPage = () => {
     }
   };
 
-  const addImage = (coords: XYCoord | null) => {
+  const addImage = (coords: XYCoord | null, relativeCoords: XYCoord | null) => {
     let updatedOverlayMetaHistories = [...overlayMetaHistories];
     if (updatedOverlayMetaHistories.length === 0) {
       const imageItem: ImageElement = {
         coords,
+        relativeCoords,
         url: "",
         type: ELEMENT_TYPES.IMAGE,
         width: 100,
@@ -395,6 +401,7 @@ const SetupPage = () => {
           .lastEleNo;
       const imageItem: ImageElement = {
         coords,
+        relativeCoords,
         url: "",
         type: ELEMENT_TYPES.IMAGE,
         width: 100,
@@ -438,8 +445,42 @@ const SetupPage = () => {
       currentHistoryIndex
     ].elements.findIndex((ele) => ele.id === elementId);
     if (index === -1) return;
+    const element =
+      updatedOverlayMetaHistories[currentHistoryIndex].elements[index];
+
+    let currentRelativeCoordX =
+      updatedOverlayMetaHistories[currentHistoryIndex].elements[index]
+        .relativeCoords?.x ?? 0;
+    let currentRelativeCoordY =
+      updatedOverlayMetaHistories[currentHistoryIndex].elements[index]
+        .relativeCoords?.y ?? 0;
+
+    if (element.coords?.x && element.coords?.y) {
+      const newCordX = newCoords.x;
+      const newCordY = newCoords.y;
+      if (element.coords.x <= newCordX) {
+        currentRelativeCoordX =
+          currentRelativeCoordX + newCordX - element.coords.x;
+      } else {
+        currentRelativeCoordX =
+          currentRelativeCoordX - (element.coords.x - newCordX);
+      }
+      if (element.coords.y <= newCordY) {
+        currentRelativeCoordY =
+          currentRelativeCoordY + newCordY - element.coords.y;
+      } else {
+        currentRelativeCoordY =
+          currentRelativeCoordY - (element.coords.y - newCordY);
+      }
+    }
     updatedOverlayMetaHistories[currentHistoryIndex].elements[index].coords =
       newCoords;
+    updatedOverlayMetaHistories[currentHistoryIndex].elements[
+      index
+    ].relativeCoords = {
+      x: currentRelativeCoordX,
+      y: currentRelativeCoordY,
+    };
     setOverlayMetaHistories(updatedOverlayMetaHistories);
   };
 
@@ -447,16 +488,21 @@ const SetupPage = () => {
     newSize: { width: number; height: number },
     elementId: string
   ) => {
-    // const updatedOverlayMD = Object.assign({}, overlayMetadata);
-    // const index = updatedOverlayMD.elements.findIndex(
-    //   (ele) => ele.id === elementId
-    // );
-    // if (index === -1) return;
-    // const imageElement = updatedOverlayMD.elements[index] as ImageElement;
-    // imageElement.width = newSize.width;
-    // imageElement.height = newSize.height;
-    // updatedOverlayMD.elements[index] = imageElement;
-    // setOverlayMetadata(updatedOverlayMD);
+    const updatedOverlayMetaHistories = structuredClone(
+      overlayMetaHistories.slice(0, currentHistoryIndex + 1)
+    );
+    updatedOverlayMetaHistories.push(
+      structuredClone(updatedOverlayMetaHistories[currentHistoryIndex])
+    );
+    const element = updatedOverlayMetaHistories[
+      currentHistoryIndex + 1
+    ].elements.filter((ele) => ele.id === elementId)[0];
+    if (element.type === ELEMENT_TYPES.IMAGE) {
+      element.width = newSize.width;
+      element.height = newSize.height;
+    }
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
+    setCurrentHistoryIndex(currentHistoryIndex + 1);
   };
 
   const removeElement = useCallback(
@@ -515,13 +561,18 @@ const SetupPage = () => {
           (e) => e.id === elementId
         ) ?? null;
       setCopiedElement(structuredClone(copiedElement));
+      writeCB({ copiedElement, copiedElements: [] });
     },
-    [overlayMetaHistories, currentHistoryIndex]
+    [overlayMetaHistories, currentHistoryIndex, writeCB]
   );
 
   const pasteElement = useCallback(
-    (coord: { x: number; y: number }) => {
+    async (coord: { x: number; y: number }) => {
       let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+      const data = await getCB<{
+        copiedElement: Element | null;
+        copiedElements: Element[];
+      }>();
       if (!copiedElement) return;
       const lastEleNo =
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
@@ -564,85 +615,101 @@ const SetupPage = () => {
         updatedOverlayMetaHistories.push(newOverlayHistoryItem);
         setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
       }
+      if (copyType === "cut") {
+        setCopiedElement(null);
+      }
       setOverlayMetaHistories(updatedOverlayMetaHistories);
     },
-    [overlayMetaHistories, currentHistoryIndex, copiedElement]
+    [overlayMetaHistories, currentHistoryIndex, copiedElement, copyType]
   );
 
-  const pasteMultipleElements = useCallback(() => {
-    let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
-    if (copiedElements.length === 0) return;
-    const lastEleNo =
-      updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
-        .lastEleNo;
-    const pastedElements: Element[] = [];
-    for (let i = 0; i < copiedElements.length; ++i) {
-      const copiedElement = copiedElements[i];
-      switch (copiedElement.type) {
-        case ELEMENT_TYPES.IMAGE:
-          const imageElement = structuredClone(copiedElement);
-          imageElement.id = lastEleNo
-            ? `element_${lastEleNo + 1 + i}`
-            : i === 0
-            ? `element_1`
-            : `element_${i + 1}`;
-          imageElement.coords = {
-            x: copiedElement.coords!.x + 25,
-            y: copiedElement.coords!.y + 25,
-          };
-          pastedElements.push(imageElement);
-          break;
-        case ELEMENT_TYPES.TEXT:
-          const textElement = structuredClone(copiedElement);
-          textElement.id = lastEleNo
-            ? `element_${lastEleNo + 1 + i}`
-            : i === 0
-            ? `element_1`
-            : `element_${i + 1}`;
-          textElement.coords = {
-            x: copiedElement.coords!.x + 25,
-            y: copiedElement.coords!.y + 25,
-          };
-          pastedElements.push(textElement);
-          break;
+  const pasteMultipleElements = useCallback(
+    (cursorCoord?: { x: number; y: number }) => {
+      let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+      if (copiedElements.length === 0) return;
+      const lastEleNo =
+        updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+          .lastEleNo;
+      const pastedElements: Element[] = [];
+      for (let i = 0; i < copiedElements.length; ++i) {
+        const copiedElement = copiedElements[i];
+        switch (copiedElement.type) {
+          case ELEMENT_TYPES.IMAGE:
+            const imageElement = structuredClone(copiedElement);
+            imageElement.id = lastEleNo
+              ? `element_${lastEleNo + 1 + i}`
+              : i === 0
+              ? `element_1`
+              : `element_${i + 1}`;
+            imageElement.coords = {
+              x: copiedElement.coords!.x + 25,
+              y: copiedElement.coords!.y + 25,
+            };
+            pastedElements.push(imageElement);
+            break;
+          case ELEMENT_TYPES.TEXT:
+            const textElement = structuredClone(copiedElement);
+            textElement.id = lastEleNo
+              ? `element_${lastEleNo + 1 + i}`
+              : i === 0
+              ? `element_1`
+              : `element_${i + 1}`;
+            textElement.coords = {
+              x: copiedElement.coords!.x + 25,
+              y: copiedElement.coords!.y + 25,
+            };
+            pastedElements.push(textElement);
+            break;
+        }
       }
-    }
 
-    if (currentHistoryIndex < overlayMetaHistories.length - 1) {
-      updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
-        0,
-        currentHistoryIndex + 1
-      );
-      const newOverlayHistoryItem = structuredClone(
-        updatedOverlayMetaHistories[currentHistoryIndex]
-      );
-      newOverlayHistoryItem.lastEleNo = parseInt(
-        pastedElements[pastedElements.length - 1].id.split("_")[1]
-      );
-      newOverlayHistoryItem.elements = [
-        ...newOverlayHistoryItem.elements,
-        ...pastedElements,
-      ];
-      updatedOverlayMetaHistories.push(newOverlayHistoryItem);
-      setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
-    } else {
-      const newOverlayHistoryItem = structuredClone(
-        updatedOverlayMetaHistories[currentHistoryIndex]
-      );
-      newOverlayHistoryItem.lastEleNo = parseInt(
-        pastedElements[pastedElements.length - 1].id.split("_")[1]
-      );
-      newOverlayHistoryItem.elements = [
-        ...newOverlayHistoryItem.elements,
-        ...pastedElements,
-      ];
-      updatedOverlayMetaHistories.push(newOverlayHistoryItem);
-      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
-    }
-    setOverlayMetaHistories(updatedOverlayMetaHistories);
-  }, [overlayMetaHistories, currentHistoryIndex, copiedElements]);
+      if (currentHistoryIndex < overlayMetaHistories.length - 1) {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        const newOverlayHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex]
+        );
+        newOverlayHistoryItem.lastEleNo = parseInt(
+          pastedElements[pastedElements.length - 1].id.split("_")[1]
+        );
+        newOverlayHistoryItem.elements = [
+          ...newOverlayHistoryItem.elements,
+          ...pastedElements,
+        ];
+        updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+        setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+      } else {
+        const newOverlayHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex]
+        );
+        newOverlayHistoryItem.lastEleNo = parseInt(
+          pastedElements[pastedElements.length - 1].id.split("_")[1]
+        );
+        newOverlayHistoryItem.elements = [
+          ...newOverlayHistoryItem.elements,
+          ...pastedElements,
+        ];
+        updatedOverlayMetaHistories.push(newOverlayHistoryItem);
+        setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+      }
+      if (copyType === "cut") {
+        setCopiedElement(null);
+        setCopiedElements([]);
+      }
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+    },
+    [overlayMetaHistories, currentHistoryIndex, copiedElements, copyType]
+  );
 
   const handleSelectElement = (elementId: string) => {
+    if (
+      currentCursorToolOption === CURSOR_TOOL_OPTIONS.DEFAULT &&
+      inSelectZoneIds.length > 0
+    ) {
+      setInSelectZoneIds([]);
+    }
     setSelectedElementId(elementId);
   };
 
@@ -701,6 +768,10 @@ const SetupPage = () => {
     // obsRef.current.on("ConnectionOpened", () => {
     //   setConnected(true);
     // });
+
+    document.oncontextmenu = function (e) {
+      stopEvent(e);
+    };
   }, []);
 
   const test = async () => {
@@ -785,6 +856,9 @@ const SetupPage = () => {
       ].elements.filter((e) => ids.includes(e.id));
       if (copiedElements.length === 0) return;
       setCopiedElements(copiedElements);
+      navigator.clipboard.writeText(
+        JSON.stringify({ copiedElements, copyElement: null })
+      );
     },
     [overlayMetaHistories, currentHistoryIndex]
   );
@@ -809,6 +883,7 @@ const SetupPage = () => {
           pressedKies[1] === "c" &&
           (selectedElementId || inSelectZoneIds.length > 0)
         ) {
+          setCopyType("copy");
           if (selectedElementId) {
             setCopiedElements([]);
             copyElement(selectedElementId);
@@ -831,36 +906,56 @@ const SetupPage = () => {
           } else {
             pasteMultipleElements();
           }
-          setPressedKies([]);
+        }
+
+        if (
+          pressedKies[0] === "Control" &&
+          pressedKies[1] === "x" &&
+          (selectedElementId || inSelectZoneIds.length > 0)
+        ) {
+          setCopyType("cut");
+          if (selectedElementId) {
+            setCopiedElements([]);
+            copyElement(selectedElementId);
+            removeElement(selectedElementId);
+          } else {
+            setCopiedElement(null);
+            copyMultipleElements(inSelectZoneIds);
+            removeMultipleElements(inSelectZoneIds);
+          }
+        }
+
+        if (
+          pressedKies[0] === "Control" &&
+          pressedKies[1] === "z" &&
+          currentHistoryIndex > 0
+        ) {
+          setCurrentHistoryIndex((prevIndex) => prevIndex - 1);
+        }
+
+        if (
+          pressedKies[0] === "Control" &&
+          pressedKies[1] === "y" &&
+          currentHistoryIndex < overlayMetaHistories.length - 1
+        ) {
+          setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+        }
+
+        if (pressedKies[0] === "Control" && pressedKies[1] === "a") {
+          setInSelectZoneIds(
+            overlayMetaHistories[currentHistoryIndex].elements.map(
+              (element) => element.id
+            )
+          );
         }
       }
     }
-  }, [
-    pressedKies,
-    selectedElementId,
-    inSelectZoneIds,
-    removeElement,
-    removeMultipleElements,
-    copyElement,
-    copiedElement,
-    pasteElement,
-    setPressedKies,
-    copyMultipleElements,
-    copiedElements,
-    pasteMultipleElements,
-  ]);
-
-  useEffect(() => {
-    document.oncontextmenu = function (e) {
-      stopEvent(e);
-    };
-  }, []);
+  }, [pressedKies]);
 
   return (
     <Container>
       <Header>
         <HeaderLeft>
-          s
           <button
             className={currentHistoryIndex <= 0 ? "disabled" : ""}
             onClick={() =>
@@ -949,6 +1044,7 @@ const SetupPage = () => {
         <Center>
           {overlayMetaHistories[currentHistoryIndex] && (
             <OverlayView
+              setCopyType={setCopyType}
               inSelectZoneIds={inSelectZoneIds}
               setInSelectZoneIds={(ids) => {
                 setSelectedElementId(null);
@@ -956,6 +1052,7 @@ const SetupPage = () => {
               }}
               currentCursorToolOption={currentCursorToolOption}
               copiedElement={copiedElement}
+              copiedElements={copiedElements}
               key={currentHistoryIndex}
               updateElementSize={updateElementSize}
               exportContainerRef={exportContainerRef}
@@ -963,9 +1060,14 @@ const SetupPage = () => {
               removeElement={removeElement}
               copyElement={copyElement}
               pasteElement={pasteElement}
+              pasteMultipleElements={pasteMultipleElements}
               updateElementCoords={updateElementCoords}
-              addText={(coords) => addText(coords)}
-              addImage={(coords) => addImage(coords)}
+              addText={(coords, relativeCoords) =>
+                addText(coords, relativeCoords)
+              }
+              addImage={(coords, relativeCoords) =>
+                addImage(coords, relativeCoords)
+              }
               overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
             />
           )}

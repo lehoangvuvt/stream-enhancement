@@ -315,10 +315,8 @@ const OverlayElement: React.FC<Props> = ({
                   elementItem.width -
                   (e.pageX - containerRef.current.getBoundingClientRect().left);
               }
-
               updateCoords({ x: newX, y: newY }, index);
               updateElementSize && updateElementSize({ width, height });
-
               break;
             case "top":
               if (e.pageY < containerRef.current.getBoundingClientRect().top) {

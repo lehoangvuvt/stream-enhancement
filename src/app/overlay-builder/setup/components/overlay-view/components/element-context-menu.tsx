@@ -67,8 +67,11 @@ type Props = {
   selectEleId: string;
   deleteElement: () => void;
   copyElement: () => void;
+  cutElement: () => void;
   pasteElement: (cord: { x: number; y: number }) => void;
+  pasteMultipleElements: (cord: { x: number; y: number }) => void;
   copiedElement: Element | null;
+  copiedElements: Element[];
 };
 
 const ElementContextMenu: React.FC<Props> = ({
@@ -77,9 +80,22 @@ const ElementContextMenu: React.FC<Props> = ({
   selectEleId,
   deleteElement,
   copyElement,
+  cutElement,
   pasteElement,
+  pasteMultipleElements,
   copiedElement,
+  copiedElements,
 }) => {
+  const handlePaste = (e: MouseEvent) => {
+    if (copiedElement || copiedElements.length > 0) {
+      if (copiedElement) {
+        pasteElement({ x: e.pageX, y: e.pageY });
+      } else {
+        pasteMultipleElements({ x: e.pageX, y: e.pageY });
+      }
+    }
+  };
+
   return (
     <Container
       style={{
@@ -97,11 +113,15 @@ const ElementContextMenu: React.FC<Props> = ({
             <p>Copy</p>
             <kbd>Crl + C</kbd>
           </ContextMenuItem>
+          <ContextMenuItem onClick={cutElement}>
+            <p>Cut</p>
+            <kbd>Crl + X</kbd>
+          </ContextMenuItem>
         </>
       )}
       <ContextMenuItem
-        className={copiedElement ? "" : "disabled"}
-        onClick={(e: MouseEvent) => pasteElement({ x: e.pageX, y: e.pageY })}
+        className={copiedElement || copiedElements.length > 0 ? "" : "disabled"}
+        onClick={handlePaste}
       >
         <p>Paste here</p>
         <kbd>Crl + V</kbd>

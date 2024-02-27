@@ -2,6 +2,8 @@
 
 import { ELEMENT_TYPES, Element } from "@/app/types/element.types";
 import ColorInput from "@/components/color-input";
+import HScrollInput from "@/components/h-scoll-input/HScrollInput";
+import { useState } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -137,10 +139,132 @@ const ElementPropertiesPanel: React.FC<Props> = ({
     );
   };
 
+  const renderImgElementProperties = () => {
+    if (selectedElement?.type !== ELEMENT_TYPES.IMAGE) return null;
+    return (
+      <>
+        <PropertyContainer>
+          <HScrollInput
+            title="W"
+            decrement={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.width = updatedElement.width - step;
+              updateElement(updatedElement);
+            }}
+            increment={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.width += step;
+              updateElement(updatedElement);
+            }}
+            onChange={(value) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.width = value;
+              updateElement(updatedElement);
+            }}
+            value={selectedElement.width}
+          />
+        </PropertyContainer>
+        <PropertyContainer>
+          <HScrollInput
+            title="H"
+            decrement={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.height = updatedElement.height - step;
+              updateElement(updatedElement);
+            }}
+            increment={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.height += step;
+              updateElement(updatedElement);
+            }}
+            onChange={(value) => {
+              const updatedElement = structuredClone(selectedElement);
+              updatedElement.height = value;
+              updateElement(updatedElement);
+            }}
+            value={selectedElement.height}
+          />
+        </PropertyContainer>
+        <PropertyContainer>
+          <HScrollInput
+            title="X"
+            decrement={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.x &&
+                updatedElement.coords?.x
+              ) {
+                updatedElement.coords.x -= step;
+                updatedElement.relativeCoords.x -= step;
+                updateElement(updatedElement);
+              }
+            }}
+            increment={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.x &&
+                updatedElement.coords?.x
+              ) {
+                updatedElement.coords.x += step;
+                updatedElement.relativeCoords.x += step;
+                updateElement(updatedElement);
+              }
+            }}
+            onChange={(value) => {
+              // const updatedElement = structuredClone(selectedElement);
+              // if (updatedElement.coords?.x) {
+              //   updatedElement.coords.x = value;
+              //   updateElement(updatedElement);
+              // }
+            }}
+            value={selectedElement.relativeCoords?.x ?? 0}
+          />
+        </PropertyContainer>
+        <PropertyContainer>
+          <HScrollInput
+            title="Y"
+            decrement={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.y &&
+                updatedElement.coords?.y
+              ) {
+                updatedElement.coords.y -= step;
+                updatedElement.relativeCoords.y -= step;
+                updateElement(updatedElement);
+              }
+            }}
+            increment={(step) => {
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.y &&
+                updatedElement.coords?.y
+              ) {
+                updatedElement.coords.y += step;
+                updatedElement.relativeCoords.y += step;
+                updateElement(updatedElement);
+              }
+            }}
+            onChange={(value) => {
+              // const updatedElement = structuredClone(selectedElement);
+              // if (updatedElement.coords?.y) {
+              //   updatedElement.coords.y = value;
+              //   updateElement(updatedElement);
+              // }
+            }}
+            value={selectedElement.relativeCoords?.y ?? 0}
+          />
+        </PropertyContainer>
+      </>
+    );
+  };
+
   return (
     <Container>
       {selectedElement?.type === ELEMENT_TYPES.TEXT &&
         renderTextElementProperties()}
+      {selectedElement?.type === ELEMENT_TYPES.IMAGE &&
+        renderImgElementProperties()}
     </Container>
   );
 };

@@ -1,4 +1,3 @@
-import { ZCOOL_XiaoWei } from "next/font/google";
 import { useEffect, useState } from "react";
 
 const useKeyboard = () => {
@@ -11,8 +10,10 @@ const useKeyboard = () => {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      setPressedKies([]);
+      const updatedPressedKies = pressedKies.filter((key) => key !== e.key);
+      setPressedKies(updatedPressedKies);
     };
+
     document.addEventListener("keydown", handleKeydown);
     document.addEventListener("keyup", handleKeyUp);
 
@@ -22,9 +23,17 @@ const useKeyboard = () => {
     };
   }, [pressedKies]);
 
+  useEffect(() => {
+    const handleOnBlur = () => {
+      setPressedKies([]);
+    };
+    window.addEventListener("blur", handleOnBlur);
+    return () => window.removeEventListener("blur", handleOnBlur);
+  }, []);
+
   return {
     pressedKies,
-    setPressedKies
+    setPressedKies,
   };
 };
 

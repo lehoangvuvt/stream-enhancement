@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { ColorResult, SketchPicker } from "react-color";
 import styled from "styled-components";
