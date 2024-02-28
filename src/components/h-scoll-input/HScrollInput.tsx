@@ -1,3 +1,4 @@
+import useCursor, { CURSOR } from "@/hooks/useCursor";
 import {
   MouseEvent as MouseEventReact,
   useCallback,
@@ -65,6 +66,7 @@ const HScrollInput: React.FC<Props> = ({
   increment,
   onChange,
 }) => {
+  const { setCursor } = useCursor();
   const [isFocus, setFocus] = useState(false);
   const [centerCoords, setCenterCoords] = useState<XYCoord | null>(null);
   const [isHoldLMB, setHoldLMB] = useState(false);
@@ -107,18 +109,27 @@ const HScrollInput: React.FC<Props> = ({
     if (isHoldLMB) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "e-resize !important";
-    } else {
-      document.body.style.cursor = "default";
     }
+
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("mousemove", handleMouseMove);
     };
   }, [isHoldLMB, handleMouseUp, handleMouseMove]);
 
+  useEffect(() => {
+    if (isHoldLMB) {
+      setCursor(CURSOR.E_RESIZE);
+    } else {
+      setCursor(CURSOR.AUTO);
+    }
+  }, [isHoldLMB]);
+
   return (
     <Container
+      style={{
+        cursor: isHoldLMB ? "e-resize" : "default",
+      }}
       className={isHoldLMB && !isFocus ? "holdLMB" : isFocus ? "selected" : ""}
     >
       <Title

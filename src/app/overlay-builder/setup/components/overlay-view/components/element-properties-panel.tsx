@@ -191,8 +191,8 @@ const ElementPropertiesPanel: React.FC<Props> = ({
             decrement={(step) => {
               const updatedElement = structuredClone(selectedElement);
               if (
-                updatedElement.relativeCoords?.x &&
-                updatedElement.coords?.x
+                updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                updatedElement.coords?.hasOwnProperty("x")
               ) {
                 updatedElement.coords.x -= step;
                 updatedElement.relativeCoords.x -= step;
@@ -202,8 +202,8 @@ const ElementPropertiesPanel: React.FC<Props> = ({
             increment={(step) => {
               const updatedElement = structuredClone(selectedElement);
               if (
-                updatedElement.relativeCoords?.x &&
-                updatedElement.coords?.x
+                updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                updatedElement.coords?.hasOwnProperty("x")
               ) {
                 updatedElement.coords.x += step;
                 updatedElement.relativeCoords.x += step;
@@ -211,11 +211,23 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               }
             }}
             onChange={(value) => {
-              // const updatedElement = structuredClone(selectedElement);
-              // if (updatedElement.coords?.x) {
-              //   updatedElement.coords.x = value;
-              //   updateElement(updatedElement);
-              // }
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                updatedElement.coords?.hasOwnProperty("x")
+              ) {
+                let diff = 0;
+                if (value <= updatedElement.relativeCoords.x) {
+                  diff = updatedElement.relativeCoords.x - value;
+                  updatedElement.relativeCoords.x = value;
+                  updatedElement.coords.x -= diff;
+                } else {
+                  diff = value - updatedElement.relativeCoords.x;
+                  updatedElement.relativeCoords.x = value;
+                  updatedElement.coords.x += diff;
+                }
+                updateElement(updatedElement);
+              }
             }}
             value={selectedElement.relativeCoords?.x ?? 0}
           />
@@ -246,11 +258,23 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               }
             }}
             onChange={(value) => {
-              // const updatedElement = structuredClone(selectedElement);
-              // if (updatedElement.coords?.y) {
-              //   updatedElement.coords.y = value;
-              //   updateElement(updatedElement);
-              // }
+              const updatedElement = structuredClone(selectedElement);
+              if (
+                updatedElement.relativeCoords?.hasOwnProperty("y") &&
+                updatedElement.coords?.hasOwnProperty("y")
+              ) {
+                let diff = 0;
+                if (value <= updatedElement.relativeCoords.y) {
+                  diff = updatedElement.relativeCoords.y - value;
+                  updatedElement.relativeCoords.y = value;
+                  updatedElement.coords.y -= diff;
+                } else {
+                  diff = value - updatedElement.relativeCoords.y;
+                  updatedElement.relativeCoords.y = value;
+                  updatedElement.coords.y += diff;
+                }
+                updateElement(updatedElement);
+              }
             }}
             value={selectedElement.relativeCoords?.y ?? 0}
           />
