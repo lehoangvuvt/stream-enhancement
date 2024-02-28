@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import BackgroundItem, { TBackgroundItem } from "./components/background-item";
 import OverlayView from "./components/overlay-view";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
@@ -18,7 +18,7 @@ import {
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
 import OBSWebSocket from "obs-websocket-js";
 import { BrowserInputSettings } from "@/app/types/obs.types";
-import { exportComponentAsJPEG } from "react-component-export-image";
+// import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
 import useKeyboard from "@/hooks/useKeyboard";
 import useClipboard from "@/hooks/useClipboard";
@@ -838,11 +838,9 @@ const SetupPage = () => {
 
   const downloadLayout = async () => {
     if (exportContainerRef && exportContainerRef.current) {
-      if (typeof window !== undefined) {
-        exportComponentAsJPEG(exportContainerRef, {
-          html2CanvasOptions: {},
-        });
-      }
+      // exportComponentAsJPEG(exportContainerRef, {
+      //   html2CanvasOptions: {},
+      // });
     }
   };
 
