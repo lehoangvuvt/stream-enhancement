@@ -838,9 +838,11 @@ const SetupPage = () => {
 
   const downloadLayout = async () => {
     if (exportContainerRef && exportContainerRef.current) {
-      exportComponentAsJPEG(exportContainerRef, {
-        html2CanvasOptions: {},
-      });
+      if (typeof window !== undefined) {
+        exportComponentAsJPEG(exportContainerRef, {
+          html2CanvasOptions: {},
+        });
+      }
     }
   };
 
