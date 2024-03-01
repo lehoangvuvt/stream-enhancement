@@ -13,6 +13,7 @@ import {
   ELEMENT_TYPES,
   Element,
   ImageElement,
+  SquareElement,
   TextElement,
 } from "@/app/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
@@ -22,6 +23,7 @@ import { BrowserInputSettings } from "@/app/types/obs.types";
 import ImageItem from "./components/elements/image-item";
 import useKeyboard from "@/hooks/useKeyboard";
 import useClipboard from "@/hooks/useClipboard";
+import SquareItem from "./components/elements/square-item";
 
 const Container = styled.div`
   height: 100%;
@@ -292,6 +294,7 @@ const SetupPage = () => {
       <>
         <TextItem />
         <ImageItem />
+        <SquareItem />
       </>
     );
   };
@@ -386,6 +389,7 @@ const SetupPage = () => {
         height: 100,
         id: `element_1`,
         rotate: 0,
+        borderRadius: 0,
       };
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -408,6 +412,7 @@ const SetupPage = () => {
         height: 100,
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         rotate: 0,
+        borderRadius: 0,
       };
       if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
         const newOverlayMetaHistoryItem = structuredClone(
@@ -430,6 +435,76 @@ const SetupPage = () => {
               updatedOverlayMetaHistories.length - 1
             ].elements,
             imageItem,
+          ],
+          lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
+        });
+      }
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex(updatedOverlayMetaHistories.length - 1);
+    }
+  };
+
+  const addSquare = (
+    coords: XYCoord | null,
+    relativeCoords: XYCoord | null
+  ) => {
+    let updatedOverlayMetaHistories = [...overlayMetaHistories];
+    if (updatedOverlayMetaHistories.length === 0) {
+      const squareItem: SquareElement = {
+        coords,
+        relativeCoords,
+        backgroundColor: "#FF0000",
+        type: ELEMENT_TYPES.SQUARE,
+        width: 100,
+        height: 100,
+        id: `element_1`,
+        rotate: 0,
+        borderRadius: 0,
+      };
+      updatedOverlayMetaHistories.push({
+        background_ratio: [16, 9],
+        background_url: "",
+        elements: [squareItem],
+        lastEleNo: 1,
+      });
+      setOverlayMetaHistories(updatedOverlayMetaHistories);
+      setCurrentHistoryIndex((prevIndex) => prevIndex + 1);
+    } else {
+      const lastEleNo =
+        updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+          .lastEleNo;
+      const squareItem: SquareElement = {
+        coords,
+        relativeCoords,
+        backgroundColor: "#FF0000",
+        type: ELEMENT_TYPES.SQUARE,
+        width: 100,
+        height: 100,
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
+        rotate: 0,
+        borderRadius: 0,
+      };
+      if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
+        const newOverlayMetaHistoryItem = structuredClone(
+          updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
+        );
+        newOverlayMetaHistoryItem.elements.push(squareItem);
+        newOverlayMetaHistoryItem.lastEleNo = lastEleNo ? lastEleNo + 1 : 1;
+        updatedOverlayMetaHistories.push(newOverlayMetaHistoryItem);
+      } else {
+        updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
+          0,
+          currentHistoryIndex + 1
+        );
+        updatedOverlayMetaHistories.push({
+          ...updatedOverlayMetaHistories[
+            updatedOverlayMetaHistories.length - 1
+          ],
+          elements: [
+            ...updatedOverlayMetaHistories[
+              updatedOverlayMetaHistories.length - 1
+            ].elements,
+            squareItem,
           ],
           lastEleNo: lastEleNo ? lastEleNo + 1 : 1,
         });
@@ -497,7 +572,10 @@ const SetupPage = () => {
     const element = updatedOverlayMetaHistories[
       currentHistoryIndex + 1
     ].elements.filter((ele) => ele.id === elementId)[0];
-    if (element.type === ELEMENT_TYPES.IMAGE) {
+    if (
+      element.type === ELEMENT_TYPES.IMAGE ||
+      element.type === ELEMENT_TYPES.SQUARE
+    ) {
       element.width = newSize.width;
       element.height = newSize.height;
     }
@@ -577,23 +655,9 @@ const SetupPage = () => {
       const lastEleNo =
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
           .lastEleNo;
-      let pastedElement: any = null;
-      switch (copiedElement.type) {
-        case ELEMENT_TYPES.IMAGE:
-          pastedElement = structuredClone(copiedElement);
-          pastedElement.id = lastEleNo
-            ? `element_${lastEleNo + 1}`
-            : `element_1`;
-          pastedElement.coords = { x: coord.x, y: coord.y };
-          break;
-        case ELEMENT_TYPES.TEXT:
-          pastedElement = structuredClone(copiedElement);
-          pastedElement.id = lastEleNo
-            ? `element_${lastEleNo + 1}`
-            : `element_1`;
-          pastedElement.coords = { x: coord.x, y: coord.y };
-          break;
-      }
+      const pastedElement = structuredClone(copiedElement);
+      pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
+      pastedElement.coords = { x: coord.x, y: coord.y };
       if (currentHistoryIndex < overlayMetaHistories.length - 1) {
         updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
           0,
@@ -632,37 +696,18 @@ const SetupPage = () => {
           .lastEleNo;
       const pastedElements: Element[] = [];
       for (let i = 0; i < copiedElements.length; ++i) {
-        const copiedElement = copiedElements[i];
-        switch (copiedElement.type) {
-          case ELEMENT_TYPES.IMAGE:
-            const imageElement = structuredClone(copiedElement);
-            imageElement.id = lastEleNo
-              ? `element_${lastEleNo + 1 + i}`
-              : i === 0
-              ? `element_1`
-              : `element_${i + 1}`;
-            imageElement.coords = {
-              x: copiedElement.coords!.x + 25,
-              y: copiedElement.coords!.y + 25,
-            };
-            pastedElements.push(imageElement);
-            break;
-          case ELEMENT_TYPES.TEXT:
-            const textElement = structuredClone(copiedElement);
-            textElement.id = lastEleNo
-              ? `element_${lastEleNo + 1 + i}`
-              : i === 0
-              ? `element_1`
-              : `element_${i + 1}`;
-            textElement.coords = {
-              x: copiedElement.coords!.x + 25,
-              y: copiedElement.coords!.y + 25,
-            };
-            pastedElements.push(textElement);
-            break;
-        }
+        const copiedElement = structuredClone(copiedElements[i]);
+        copiedElement.id = lastEleNo
+          ? `element_${lastEleNo + 1 + i}`
+          : i === 0
+          ? `element_1`
+          : `element_${i + 1}`;
+        copiedElement.coords = {
+          x: copiedElement.coords!.x + 25,
+          y: copiedElement.coords!.y + 25,
+        };
+        pastedElements.push(copiedElement);
       }
-
       if (currentHistoryIndex < overlayMetaHistories.length - 1) {
         updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
           0,
@@ -864,6 +909,32 @@ const SetupPage = () => {
   );
 
   useEffect(() => {
+    const handleClipboardContent = async () => {
+      try {
+        const clipboardContents = await navigator.clipboard.read();
+        for (const item of clipboardContents) {
+          for (const mimeType of item.types) {
+            switch (mimeType) {
+              case "text/html":
+                const blob = await item.getType("text/html");
+                const blobText = await blob.text();
+                const container = document.getElementById("drop-zone-element");
+                if (container) {
+                  container.innerText = blobText;
+                }
+                console.log(blobText);
+                // const clipHTML = document.createElement("pre");
+                // clipHTML.innerText = blobText;
+                // destinationDiv.appendChild(clipHTML);
+                break;
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     if (pressedKies.length > 0) {
       if (pressedKies.length === 1) {
         if (
@@ -898,6 +969,8 @@ const SetupPage = () => {
           pressedKies[1] === "v" &&
           (copiedElement || copiedElements.length > 0)
         ) {
+          // handleClipboardContent();
+
           if (copiedElement) {
             pasteElement({
               x: copiedElement.coords!.x + 25,
@@ -1067,6 +1140,9 @@ const SetupPage = () => {
               }
               addImage={(coords, relativeCoords) =>
                 addImage(coords, relativeCoords)
+              }
+              addSquare={(coords, relativeCoords) =>
+                addSquare(coords, relativeCoords)
               }
               overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
             />

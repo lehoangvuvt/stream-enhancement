@@ -40,6 +40,7 @@ const Container = styled.div`
 
 const Title = styled.div`
   user-select: none;
+  font-size: 13px;
 `;
 
 const Input = styled.input`
@@ -49,6 +50,7 @@ const Input = styled.input`
   background: transparent;
   user-select: none;
   height: 25px;
+  font-size: 13px;
 `;
 
 type Props = {

@@ -3,7 +3,11 @@
 import { XYCoord } from "react-dnd";
 import styled from "styled-components";
 import { MouseEvent, PointerEvent, useEffect, useRef, useState } from "react";
-import { CURSOR_TOOL_OPTIONS, ELEMENT_TYPES, Element } from "@/app/types/element.types";
+import {
+  CURSOR_TOOL_OPTIONS,
+  ELEMENT_TYPES,
+  Element,
+} from "@/app/types/element.types";
 import Image from "next/image";
 
 const Container = styled.div`
@@ -119,7 +123,9 @@ type Props = {
   ) => void;
   closeContextMenu: () => void;
   isInSelectZone: boolean;
-  currentCursorToolOption: CURSOR_TOOL_OPTIONS
+  currentCursorToolOption: CURSOR_TOOL_OPTIONS;
+  startDragging: () => void;
+  endDragging: () => void;
 };
 
 const OverlayElement: React.FC<Props> = ({
@@ -132,7 +138,9 @@ const OverlayElement: React.FC<Props> = ({
   closeContextMenu,
   isInSelectZone,
   selected,
-  currentCursorToolOption
+  currentCursorToolOption,
+  startDragging,
+  endDragging,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(-100);
@@ -163,11 +171,33 @@ const OverlayElement: React.FC<Props> = ({
       case ELEMENT_TYPES.IMAGE:
         element = (
           <Image
-            style={{ pointerEvents: "none", userSelect: "none" }}
+            style={{
+              pointerEvents: "none",
+              userSelect: "none",
+              borderRadius: elementItem.borderRadius + "px",
+            }}
             width={elementItem.width}
             height={elementItem.height}
-            src="https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720"
+            src={
+              elementItem.url?.length > 0
+                ? elementItem.url
+                : "https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720"
+            }
             alt="image-item"
+          />
+        );
+        break;
+      case ELEMENT_TYPES.SQUARE:
+        element = (
+          <div
+            style={{
+              pointerEvents: "none",
+              userSelect: "none",
+              width: `${elementItem.width}px`,
+              height: `${elementItem.height}px`,
+              backgroundColor: elementItem.backgroundColor,
+              borderRadius: `${elementItem.borderRadius}px`,
+            }}
           />
         );
         break;
@@ -207,12 +237,14 @@ const OverlayElement: React.FC<Props> = ({
   const handleMove = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pressure > 0 && containerRef && containerRef.current) {
       onClick();
+      startDragging();
       const x = e.pageX;
       const y = e.pageY;
       updateCoords({ x, y }, index);
       setDrag(true);
       closeContextMenu();
     } else {
+      endDragging();
       setDrag(false);
     }
   };
@@ -293,7 +325,10 @@ const OverlayElement: React.FC<Props> = ({
   const handleMouseRelease = (e: any) => {
     if (resizeDirection) {
       if (containerRef && containerRef.current) {
-        if (elementItem.type === ELEMENT_TYPES.IMAGE) {
+        if (
+          elementItem.type === ELEMENT_TYPES.IMAGE ||
+          elementItem.type === ELEMENT_TYPES.SQUARE
+        ) {
           let width = elementItem.width;
           let height = elementItem.height;
           switch (resizeDirection) {
@@ -356,7 +391,10 @@ const OverlayElement: React.FC<Props> = ({
         left: left + "%",
         top: top + "%",
         border: isInSelectZone ? "1px dashed red" : "none",
-        pointerEvents: currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT ? 'all' : 'none'
+        pointerEvents:
+          currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT
+            ? "all"
+            : "none",
       }}
     >
       {selected && (
@@ -382,7 +420,10 @@ const OverlayElement: React.FC<Props> = ({
           <MoveHandler
             style={{
               cursor: onDrag ? "grabbing" : "grab",
-              pointerEvents: currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT ? 'all' : 'none'
+              pointerEvents:
+                currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT
+                  ? "all"
+                  : "none",
             }}
             onDoubleClick={() => setDoubleClick(true)}
             onClick={(e: any) => onClick()}

@@ -4,7 +4,13 @@ import { XYCoord, useDrop } from "react-dnd";
 import styled from "styled-components";
 import { OverlayMetadata } from "../../page";
 import OverlayElement from "./components/overlay-element";
-import { MouseEvent, useCallback, useEffect, useState } from "react";
+import {
+  MouseEvent as MouseEventReact,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
@@ -31,6 +37,31 @@ const SelectZone = styled.div`
   pointer-events: none;
 `;
 
+const CenterLine = styled.div`
+  width: 1px;
+  height: 100%;
+  position: absolute;
+  z-index: 50;
+  background-color: #ffcc80;
+  transform: translateX(-50%);
+  left: 50%;
+  user-select: none;
+  pointer-events: none;
+`;
+
+const MiddleLine = styled.div`
+  height: 1px;
+  width: 100%;
+  position: absolute;
+  z-index: 50;
+  background-color: #ffcc80;
+  transform: translateY(-50%);
+  left: 0;
+  top: 50%;
+  user-select: none;
+  pointer-events: none;
+`;
+
 type Props = {
   overlayMetadata: OverlayMetadata;
   updateElementCoords: (newCoords: XYCoord, elementId: string) => void;
@@ -38,6 +69,7 @@ type Props = {
   copyElement: (elementId: string) => void;
   addText: (coords: XYCoord | null, relativeCoords: XYCoord | null) => void;
   addImage: (coords: XYCoord | null, relativeCoords: XYCoord | null) => void;
+  addSquare: (coords: XYCoord | null, relativeCoords: XYCoord | null) => void;
   selectElement: (elementId: string) => void;
   updateElementSize: (
     newSize: { width: number; height: number },
@@ -63,6 +95,7 @@ const OverlayView: React.FC<Props> = ({
   pasteMultipleElements,
   addText,
   addImage,
+  addSquare,
   selectElement,
   updateElementSize,
   exportContainerRef,
@@ -73,11 +106,16 @@ const OverlayView: React.FC<Props> = ({
   setInSelectZoneIds,
   setCopyType,
 }) => {
+  const centerLineRef = useRef<HTMLDivElement>(null);
+  const middleLineRef = useRef<HTMLDivElement>(null);
   const [selectedEleId, setSelectedEleId] = useState("");
   const [isOpenContextMenu, setOpenContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const { background_ratio, background_url } = overlayMetadata;
   const [isPress, setIsPress] = useState(false);
+  const [isDraggingElement, setDraggingElement] = useState(false);
+  const [isCenter, setCenter] = useState(false);
+  const [isMiddle, setMiddle] = useState(false);
   const [startCoord, setStartCoord] = useState<{ x: number; y: number } | null>(
     null
   );
@@ -85,7 +123,7 @@ const OverlayView: React.FC<Props> = ({
     null
   );
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: ["TEXT", "IMAGE"],
+    accept: ["TEXT", "IMAGE", "SQUARE"],
     drop: (item, monitor) => {
       const type = monitor.getItemType();
       const clientOffset = monitor.getClientOffset();
@@ -109,6 +147,11 @@ const OverlayView: React.FC<Props> = ({
           relativeCoords.y -= 50;
           addImage(monitor.getClientOffset(), relativeCoords);
           break;
+        case "SQUARE":
+          relativeCoords.x -= 50;
+          relativeCoords.y -= 50;
+          addSquare(monitor.getClientOffset(), relativeCoords);
+          break;
       }
     },
     collect: (monitor) => ({
@@ -119,7 +162,7 @@ const OverlayView: React.FC<Props> = ({
 
   const isActive = canDrop && isOver;
 
-  const handleMouseDown = (e: MouseEvent) => {
+  const handleMouseDown = (e: MouseEventReact) => {
     if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
       setIsPress(true);
       if (!startCoord) {
@@ -129,7 +172,7 @@ const OverlayView: React.FC<Props> = ({
     }
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = (e: MouseEventReact) => {
     if (
       isPress &&
       currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
@@ -138,7 +181,7 @@ const OverlayView: React.FC<Props> = ({
     }
   };
 
-  const handleMouseUp = (e: MouseEvent) => {
+  const handleMouseUp = (e: MouseEventReact) => {
     if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
       setIsPress(false);
       setStartCoord(null);
@@ -176,6 +219,37 @@ const OverlayView: React.FC<Props> = ({
       return isInsideX && isInsideY;
     }
   };
+
+  const handleMouseMove2 = useCallback(
+    (e: MouseEvent) => {
+      if (
+        centerLineRef?.current &&
+        middleLineRef?.current &&
+        isDraggingElement
+      ) {
+        const offset = 10;
+        const centerLineX = centerLineRef.current.getBoundingClientRect().x;
+        const centerLineWidth = centerLineRef.current.clientWidth;
+        const middleLineY = centerLineRef.current.getBoundingClientRect().y;
+        const middleLineHeight = centerLineRef.current.clientHeight;
+        const centerPointX = centerLineX + centerLineWidth / 2;
+        const middlePointY = middleLineY + middleLineHeight / 2;
+        const isCenter = Math.abs(e.pageX - centerPointX) <= offset;
+        const isMiddle = Math.abs(e.pageY - middlePointY) <= offset;
+        const x = isCenter ? centerPointX : e.pageX;
+        const y = isMiddle ? middlePointY : e.pageY;
+        setCenter(isCenter);
+        setMiddle(isMiddle);
+        updateElementCoords({ x, y }, selectedEleId);
+      }
+    },
+    [isDraggingElement, selectedEleId, updateElementCoords]
+  );
+
+  useEffect(() => {
+    document.addEventListener("mousemove", handleMouseMove2);
+    return () => document.removeEventListener("mousemove", handleMouseMove2);
+  }, [isDraggingElement, handleMouseMove2]);
 
   useEffect(() => {
     if (
@@ -229,7 +303,7 @@ const OverlayView: React.FC<Props> = ({
 
   return (
     <div
-      onContextMenu={(e: MouseEvent) => {
+      onContextMenu={(e: MouseEventReact) => {
         if (selectedEleId !== "") {
           setSelectedEleId("");
         }
@@ -277,7 +351,8 @@ const OverlayView: React.FC<Props> = ({
         $ratio={background_ratio}
         $bgURL={background_url}
       >
-        {/* {isActive ? "Release to drop" : "Drag a box here"} */}
+        <CenterLine style={{ opacity: isCenter ? 1 : 0 }} ref={centerLineRef} />
+        <MiddleLine style={{ opacity: isMiddle ? 1 : 0 }} ref={middleLineRef} />
         {overlayMetadata.elements.map((element, i) => (
           <OverlayElement
             currentCursorToolOption={currentCursorToolOption}
@@ -299,9 +374,18 @@ const OverlayView: React.FC<Props> = ({
             selected={selectedEleId === element.id}
             isInSelectZone={inSelectZoneIds.includes(element.id)}
             updateElementSize={(newSize) => {
-              if (element.type === ELEMENT_TYPES.IMAGE) {
+              if (
+                element.type === ELEMENT_TYPES.IMAGE ||
+                element.type === ELEMENT_TYPES.SQUARE
+              ) {
                 updateElementSize(newSize, element.id);
               }
+            }}
+            startDragging={() => setDraggingElement(true)}
+            endDragging={() => {
+              setCenter(false);
+              setMiddle(false);
+              setDraggingElement(false);
             }}
             onClick={() => {
               setSelectedEleId(element.id);

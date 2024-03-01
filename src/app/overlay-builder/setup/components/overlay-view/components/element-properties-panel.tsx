@@ -140,7 +140,11 @@ const ElementPropertiesPanel: React.FC<Props> = ({
   };
 
   const renderImgElementProperties = () => {
-    if (selectedElement?.type !== ELEMENT_TYPES.IMAGE) return null;
+    if (
+      selectedElement?.type !== ELEMENT_TYPES.IMAGE &&
+      selectedElement?.type !== ELEMENT_TYPES.SQUARE
+    )
+      return null;
     return (
       <>
         <PropertyContainer>
@@ -279,6 +283,52 @@ const ElementPropertiesPanel: React.FC<Props> = ({
             value={selectedElement.relativeCoords?.y ?? 0}
           />
         </PropertyContainer>
+        {selectedElement.type === ELEMENT_TYPES.SQUARE && (
+          <>
+            <PropertyContainer>
+              <PropertyHeader>Màu nền</PropertyHeader>
+              <PropertyValue>
+                <ColorInput
+                  color={selectedElement.backgroundColor}
+                  onChange={(color) => {
+                    const updatedElement = Object.assign({}, selectedElement);
+                    updatedElement.backgroundColor = color;
+                    updateElement(updatedElement);
+                  }}
+                />
+              </PropertyValue>
+            </PropertyContainer>
+          </>
+        )}
+        {selectedElement.type === ELEMENT_TYPES.IMAGE && (
+          <PropertyContainer>
+            <PropertyHeader>Hình ảnh</PropertyHeader>
+            <PropertyValue>
+              <input
+                value={selectedElement.url}
+                onChange={(e) => {
+                  const updatedElement = Object.assign({}, selectedElement);
+                  updatedElement.url = e.target.value;
+                  updateElement(updatedElement);
+                }}
+              />
+            </PropertyValue>
+          </PropertyContainer>
+        )}
+        <PropertyContainer>
+          <PropertyHeader>Bo viền</PropertyHeader>
+          <PropertyValue>
+            <input
+              type="number"
+              value={selectedElement.borderRadius}
+              onChange={(e) => {
+                const updatedElement = Object.assign({}, selectedElement);
+                updatedElement.borderRadius = parseInt(e.target.value);
+                updateElement(updatedElement);
+              }}
+            />
+          </PropertyValue>
+        </PropertyContainer>
       </>
     );
   };
@@ -287,7 +337,8 @@ const ElementPropertiesPanel: React.FC<Props> = ({
     <Container>
       {selectedElement?.type === ELEMENT_TYPES.TEXT &&
         renderTextElementProperties()}
-      {selectedElement?.type === ELEMENT_TYPES.IMAGE &&
+      {(selectedElement?.type === ELEMENT_TYPES.IMAGE ||
+        selectedElement?.type === ELEMENT_TYPES.SQUARE) &&
         renderImgElementProperties()}
     </Container>
   );
