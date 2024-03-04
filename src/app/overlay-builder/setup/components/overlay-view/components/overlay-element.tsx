@@ -416,10 +416,15 @@ const OverlayElement: React.FC<Props> = ({
     let isCollided = false;
     switch (direction) {
       case "b":
-        selectedElementY = selectedElement.getBoundingClientRect().y;
         if (
           Math.abs(
-            selectedElementY -
+            selectedElement.getBoundingClientRect().y -
+              element.getBoundingClientRect().y -
+              element.clientHeight
+          ) <= offset ||
+          Math.abs(
+            selectedElement.getBoundingClientRect().y +
+              selectedElement.clientHeight -
               element.getBoundingClientRect().y -
               element.clientHeight
           ) <= offset
@@ -428,21 +433,30 @@ const OverlayElement: React.FC<Props> = ({
         }
         break;
       case "t":
-        selectedElementY =
-          selectedElement.getBoundingClientRect().y +
-          selectedElement.clientHeight;
         if (
-          Math.abs(selectedElementY - element.getBoundingClientRect().y) <=
-          offset
+          Math.abs(
+            selectedElement.getBoundingClientRect().y +
+              selectedElement.clientHeight -
+              element.getBoundingClientRect().y
+          ) <= offset ||
+          Math.abs(
+            selectedElement.getBoundingClientRect().y -
+              element.getBoundingClientRect().y
+          ) <= offset
         ) {
           isCollided = true;
         }
         break;
       case "r":
-        selectedElementX = selectedElement.getBoundingClientRect().x;
         if (
           Math.abs(
-            selectedElementX -
+            selectedElement.getBoundingClientRect().x -
+              element.getBoundingClientRect().x -
+              element.clientWidth
+          ) <= offset ||
+          Math.abs(
+            selectedElement.getBoundingClientRect().x +
+              selectedElement.clientWidth -
               element.getBoundingClientRect().x -
               element.clientWidth
           ) <= offset
@@ -455,8 +469,15 @@ const OverlayElement: React.FC<Props> = ({
           selectedElement.getBoundingClientRect().x +
           selectedElement.clientWidth;
         if (
-          Math.abs(selectedElementX - element.getBoundingClientRect().x) <=
-          offset
+          Math.abs(
+            selectedElement.getBoundingClientRect().x +
+              selectedElement.clientWidth -
+              element.getBoundingClientRect().x
+          ) <= offset ||
+          Math.abs(
+            selectedElement.getBoundingClientRect().x -
+              element.getBoundingClientRect().x
+          ) <= offset
         ) {
           isCollided = true;
         }
