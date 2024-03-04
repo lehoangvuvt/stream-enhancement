@@ -40,11 +40,13 @@ const Container = styled.div`
 
 const Title = styled.div`
   user-select: none;
-  font-size: 13px;
+  font-size: 14px;
+  width: 12px;
+  color: rgba(0, 0, 0, 0.6);
 `;
 
 const Input = styled.input`
-  flex: 1;
+  width: calc(100% - 12px);
   border: none;
   outline: none;
   background: transparent;
@@ -56,6 +58,7 @@ const Input = styled.input`
 type Props = {
   title: string;
   value: number;
+  style?: React.CSSProperties;
   decrement: (step: number) => void;
   increment: (step: number) => void;
   onChange: (value: number) => void;
@@ -64,6 +67,7 @@ type Props = {
 const HScrollInput: React.FC<Props> = ({
   title,
   value,
+  style,
   decrement,
   increment,
   onChange,
@@ -129,9 +133,7 @@ const HScrollInput: React.FC<Props> = ({
 
   return (
     <Container
-      style={{
-        cursor: isHoldLMB ? "e-resize" : "default",
-      }}
+      style={{ ...style, cursor: isHoldLMB ? "e-resize" : "default" }}
       className={isHoldLMB && !isFocus ? "holdLMB" : isFocus ? "selected" : ""}
     >
       <Title

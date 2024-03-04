@@ -355,6 +355,7 @@ const OverlayView: React.FC<Props> = ({
         <MiddleLine style={{ opacity: isMiddle ? 1 : 0 }} ref={middleLineRef} />
         {overlayMetadata.elements.map((element, i) => (
           <OverlayElement
+            selectedEleId={selectedEleId}
             currentCursorToolOption={currentCursorToolOption}
             closeContextMenu={() => {
               setOpenContextMenu(false);

@@ -312,6 +312,7 @@ const SetupPage = () => {
         text: "New Text",
         type: ELEMENT_TYPES.TEXT,
         id: "element_1",
+        rotate: 0,
       };
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -335,6 +336,7 @@ const SetupPage = () => {
         text: "New Text",
         type: ELEMENT_TYPES.TEXT,
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
+        rotate: 0,
       };
       if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
         updatedOverlayMetaHistories.push({

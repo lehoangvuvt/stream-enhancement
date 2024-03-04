@@ -12,6 +12,7 @@ import Image from "next/image";
 
 const Container = styled.div`
   position: absolute;
+  box-sizing: border-box;
   textarea {
     resize: none;
     background-color: transparent;
@@ -36,6 +37,32 @@ const BoxWithInterractiveBorder = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+`;
+
+const ColliedBorder = styled.div<{
+  $isCollided_L: boolean;
+  $isCollided_R: boolean;
+  $isCollided_T: boolean;
+  $isCollided_B: boolean;
+}>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: transparent;
+  border-color: #ffcc80;
+  border-style: solid;
+  border-bottom-width: ${(props) => (props.$isCollided_B ? "1px" : "0px")};
+  border-top-width: ${(props) => (props.$isCollided_T ? "1px" : "0px")};
+  border-right-width: ${(props) => (props.$isCollided_R ? "1px" : "0px")};
+  border-left-width: ${(props) => (props.$isCollided_L ? "1px" : "0px")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 `;
 
 const BaseBorder = styled.div`
@@ -126,6 +153,7 @@ type Props = {
   currentCursorToolOption: CURSOR_TOOL_OPTIONS;
   startDragging: () => void;
   endDragging: () => void;
+  selectedEleId: string;
 };
 
 const OverlayElement: React.FC<Props> = ({
@@ -141,6 +169,7 @@ const OverlayElement: React.FC<Props> = ({
   currentCursorToolOption,
   startDragging,
   endDragging,
+  selectedEleId,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(-100);
@@ -257,10 +286,6 @@ const OverlayElement: React.FC<Props> = ({
 
   const handleOpenContextMenu = (e: MouseEvent) => {
     if (containerRef && containerRef.current) {
-      // const x =
-      //   containerRef.current.getBoundingClientRect().x +
-      //   containerRef.current.offsetWidth;
-      // const y = containerRef.current.getBoundingClientRect().y;
       const position = { x: e.pageX, y: e.pageY };
       openContextMenu(position, elementItem);
     }
@@ -380,6 +405,66 @@ const OverlayElement: React.FC<Props> = ({
     return () => window.removeEventListener("mouseup", handleMouseRelease);
   }, [mousePress]);
 
+  const checkCollision = (direction: "l" | "r" | "t" | "b") => {
+    if (selectedEleId === "" || !elementItem.coords) return false;
+    const selectedElement = document.getElementById(selectedEleId);
+    const element = document.getElementById(elementItem.id);
+    if (!selectedElement || !element) return false;
+    const offset = 1;
+    let selectedElementX = 0;
+    let selectedElementY = 0;
+    let isCollided = false;
+    switch (direction) {
+      case "b":
+        selectedElementY = selectedElement.getBoundingClientRect().y;
+        if (
+          Math.abs(
+            selectedElementY -
+              element.getBoundingClientRect().y -
+              element.clientHeight
+          ) <= offset
+        ) {
+          isCollided = true;
+        }
+        break;
+      case "t":
+        selectedElementY =
+          selectedElement.getBoundingClientRect().y +
+          selectedElement.clientHeight;
+        if (
+          Math.abs(selectedElementY - element.getBoundingClientRect().y) <=
+          offset
+        ) {
+          isCollided = true;
+        }
+        break;
+      case "r":
+        selectedElementX = selectedElement.getBoundingClientRect().x;
+        if (
+          Math.abs(
+            selectedElementX -
+              element.getBoundingClientRect().x -
+              element.clientWidth
+          ) <= offset
+        ) {
+          isCollided = true;
+        }
+        break;
+      case "l":
+        selectedElementX =
+          selectedElement.getBoundingClientRect().x +
+          selectedElement.clientWidth;
+        if (
+          Math.abs(selectedElementX - element.getBoundingClientRect().x) <=
+          offset
+        ) {
+          isCollided = true;
+        }
+        break;
+    }
+    return isCollided;
+  };
+
   return (
     <Container
       id={elementItem.id}
@@ -395,8 +480,26 @@ const OverlayElement: React.FC<Props> = ({
           currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT
             ? "all"
             : "none",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        rotate: elementItem.rotate + "deg",
       }}
     >
+      <ColliedBorder
+        $isCollided_L={
+          selectedEleId !== elementItem.id ? checkCollision("l") : false
+        }
+        $isCollided_R={
+          selectedEleId !== elementItem.id ? checkCollision("r") : false
+        }
+        $isCollided_T={
+          selectedEleId !== elementItem.id ? checkCollision("t") : false
+        }
+        $isCollided_B={
+          selectedEleId !== elementItem.id ? checkCollision("b") : false
+        }
+      />
       {selected && (
         <BoxWithInterractiveBorder>
           <BorderTopLeft />

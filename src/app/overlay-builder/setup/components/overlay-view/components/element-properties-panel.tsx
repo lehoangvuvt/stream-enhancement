@@ -147,142 +147,186 @@ const ElementPropertiesPanel: React.FC<Props> = ({
       return null;
     return (
       <>
-        <PropertyContainer>
-          <HScrollInput
-            title="W"
-            decrement={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.width = updatedElement.width - step;
-              updateElement(updatedElement);
-            }}
-            increment={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.width += step;
-              updateElement(updatedElement);
-            }}
-            onChange={(value) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.width = value;
-              updateElement(updatedElement);
-            }}
-            value={selectedElement.width}
-          />
-        </PropertyContainer>
-        <PropertyContainer>
-          <HScrollInput
-            title="H"
-            decrement={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.height = updatedElement.height - step;
-              updateElement(updatedElement);
-            }}
-            increment={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.height += step;
-              updateElement(updatedElement);
-            }}
-            onChange={(value) => {
-              const updatedElement = structuredClone(selectedElement);
-              updatedElement.height = value;
-              updateElement(updatedElement);
-            }}
-            value={selectedElement.height}
-          />
-        </PropertyContainer>
-        <PropertyContainer>
-          <HScrollInput
-            title="X"
-            decrement={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.hasOwnProperty("x") &&
-                updatedElement.coords?.hasOwnProperty("x")
-              ) {
-                updatedElement.coords.x -= step;
-                updatedElement.relativeCoords.x -= step;
+        <div style={{ width: "100%", display: "flex", flexFlow: "row wrap" }}>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="W"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.width = updatedElement.width - step;
                 updateElement(updatedElement);
-              }
-            }}
-            increment={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.hasOwnProperty("x") &&
-                updatedElement.coords?.hasOwnProperty("x")
-              ) {
-                updatedElement.coords.x += step;
-                updatedElement.relativeCoords.x += step;
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.width += step;
                 updateElement(updatedElement);
-              }
-            }}
-            onChange={(value) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.hasOwnProperty("x") &&
-                updatedElement.coords?.hasOwnProperty("x")
-              ) {
-                let diff = 0;
-                if (value <= updatedElement.relativeCoords.x) {
-                  diff = updatedElement.relativeCoords.x - value;
-                  updatedElement.relativeCoords.x = value;
-                  updatedElement.coords.x -= diff;
-                } else {
-                  diff = value - updatedElement.relativeCoords.x;
-                  updatedElement.relativeCoords.x = value;
-                  updatedElement.coords.x += diff;
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.width = value;
+                updateElement(updatedElement);
+              }}
+              value={selectedElement.width}
+            />
+          </PropertyContainer>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="H"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.height = updatedElement.height - step;
+                updateElement(updatedElement);
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.height += step;
+                updateElement(updatedElement);
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.height = value;
+                updateElement(updatedElement);
+              }}
+              value={selectedElement.height}
+            />
+          </PropertyContainer>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="X"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                  updatedElement.coords?.hasOwnProperty("x")
+                ) {
+                  updatedElement.coords.x -= step;
+                  updatedElement.relativeCoords.x -= step;
+                  updateElement(updatedElement);
                 }
-                updateElement(updatedElement);
-              }
-            }}
-            value={selectedElement.relativeCoords?.x ?? 0}
-          />
-        </PropertyContainer>
-        <PropertyContainer>
-          <HScrollInput
-            title="Y"
-            decrement={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.y &&
-                updatedElement.coords?.y
-              ) {
-                updatedElement.coords.y -= step;
-                updatedElement.relativeCoords.y -= step;
-                updateElement(updatedElement);
-              }
-            }}
-            increment={(step) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.y &&
-                updatedElement.coords?.y
-              ) {
-                updatedElement.coords.y += step;
-                updatedElement.relativeCoords.y += step;
-                updateElement(updatedElement);
-              }
-            }}
-            onChange={(value) => {
-              const updatedElement = structuredClone(selectedElement);
-              if (
-                updatedElement.relativeCoords?.hasOwnProperty("y") &&
-                updatedElement.coords?.hasOwnProperty("y")
-              ) {
-                let diff = 0;
-                if (value <= updatedElement.relativeCoords.y) {
-                  diff = updatedElement.relativeCoords.y - value;
-                  updatedElement.relativeCoords.y = value;
-                  updatedElement.coords.y -= diff;
-                } else {
-                  diff = value - updatedElement.relativeCoords.y;
-                  updatedElement.relativeCoords.y = value;
-                  updatedElement.coords.y += diff;
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                  updatedElement.coords?.hasOwnProperty("x")
+                ) {
+                  updatedElement.coords.x += step;
+                  updatedElement.relativeCoords.x += step;
+                  updateElement(updatedElement);
                 }
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.hasOwnProperty("x") &&
+                  updatedElement.coords?.hasOwnProperty("x")
+                ) {
+                  let diff = 0;
+                  if (value <= updatedElement.relativeCoords.x) {
+                    diff = updatedElement.relativeCoords.x - value;
+                    updatedElement.relativeCoords.x = value;
+                    updatedElement.coords.x -= diff;
+                  } else {
+                    diff = value - updatedElement.relativeCoords.x;
+                    updatedElement.relativeCoords.x = value;
+                    updatedElement.coords.x += diff;
+                  }
+                  updateElement(updatedElement);
+                }
+              }}
+              value={selectedElement.relativeCoords?.x ?? 0}
+            />
+          </PropertyContainer>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="Y"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.y &&
+                  updatedElement.coords?.y
+                ) {
+                  updatedElement.coords.y -= step;
+                  updatedElement.relativeCoords.y -= step;
+                  updateElement(updatedElement);
+                }
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.y &&
+                  updatedElement.coords?.y
+                ) {
+                  updatedElement.coords.y += step;
+                  updatedElement.relativeCoords.y += step;
+                  updateElement(updatedElement);
+                }
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                if (
+                  updatedElement.relativeCoords?.hasOwnProperty("y") &&
+                  updatedElement.coords?.hasOwnProperty("y")
+                ) {
+                  let diff = 0;
+                  if (value <= updatedElement.relativeCoords.y) {
+                    diff = updatedElement.relativeCoords.y - value;
+                    updatedElement.relativeCoords.y = value;
+                    updatedElement.coords.y -= diff;
+                  } else {
+                    diff = value - updatedElement.relativeCoords.y;
+                    updatedElement.relativeCoords.y = value;
+                    updatedElement.coords.y += diff;
+                  }
+                  updateElement(updatedElement);
+                }
+              }}
+              value={selectedElement.relativeCoords?.y ?? 0}
+            />
+          </PropertyContainer>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="R"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.rotate -= step;
                 updateElement(updatedElement);
-              }
-            }}
-            value={selectedElement.relativeCoords?.y ?? 0}
-          />
-        </PropertyContainer>
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.rotate += step;
+                updateElement(updatedElement);
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.rotate = value;
+                updateElement(updatedElement);
+              }}
+              value={selectedElement.rotate}
+            />
+          </PropertyContainer>
+          <PropertyContainer style={{ width: "50%" }}>
+            <HScrollInput
+              title="B"
+              decrement={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.borderRadius -= step;
+                updateElement(updatedElement);
+              }}
+              increment={(step) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.borderRadius += step;
+                updateElement(updatedElement);
+              }}
+              onChange={(value) => {
+                const updatedElement = structuredClone(selectedElement);
+                updatedElement.borderRadius = value;
+                updateElement(updatedElement);
+              }}
+              value={selectedElement.borderRadius}
+            />
+          </PropertyContainer>
+        </div>
         {selectedElement.type === ELEMENT_TYPES.SQUARE && (
           <>
             <PropertyContainer>
@@ -315,20 +359,6 @@ const ElementPropertiesPanel: React.FC<Props> = ({
             </PropertyValue>
           </PropertyContainer>
         )}
-        <PropertyContainer>
-          <PropertyHeader>Bo viền</PropertyHeader>
-          <PropertyValue>
-            <input
-              type="number"
-              value={selectedElement.borderRadius}
-              onChange={(e) => {
-                const updatedElement = Object.assign({}, selectedElement);
-                updatedElement.borderRadius = parseInt(e.target.value);
-                updateElement(updatedElement);
-              }}
-            />
-          </PropertyValue>
-        </PropertyContainer>
       </>
     );
   };

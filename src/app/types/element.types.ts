@@ -15,6 +15,7 @@ export type TextElement = {
   opacity: number;
   text: string;
   coords: XYCoord | null;
+  rotate: number;
   relativeCoords: XYCoord | null;
 };
 
