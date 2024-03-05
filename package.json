@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.10",
     "@radix-ui/react-accordion": "^1.1.2",
+    "@uiw/react-textarea-code-editor": "^3.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "html2canvas": "^1.4.1",

@@ -21,7 +21,7 @@ const Container = styled.div`
     vertical-align: middle;
     text-align: center;
     width: 100%;
-    height: 100%;
+    min-height: 25px;
   }
 `;
 
@@ -53,7 +53,7 @@ const ColliedBorder = styled.div<{
   height: 100%;
   z-index: 10;
   background-color: transparent;
-  border-color: #ffcc80;
+  border-color: #ea745b;
   border-style: solid;
   border-bottom-width: ${(props) => (props.$isCollided_B ? "1px" : "0px")};
   border-top-width: ${(props) => (props.$isCollided_T ? "1px" : "0px")};
@@ -140,7 +140,7 @@ type ResizeDirection =
 type Props = {
   elementItem: Element;
   index: number;
-  updateCoords: (newCoords: XYCoord, index: number) => void;
+  updateCoords: (newCoords: XYCoord, eleId: string) => void;
   updateElementSize?: (newSize: { width: number; height: number }) => void;
   onClick: () => void;
   selected: boolean;
@@ -182,34 +182,39 @@ const OverlayElement: React.FC<Props> = ({
 
   const renderElementByType = () => {
     let element: React.ReactNode = null;
-    switch (elementItem.type) {
+    switch (elementItem.details.type) {
       case ELEMENT_TYPES.TEXT:
         element = (
           <textarea
             style={{
-              fontSize: elementItem.font_size + "px",
-              color: elementItem.font_color,
-              opacity: elementItem.opacity,
+              fontSize: elementItem.style.fontSize,
+              color: elementItem.style.color,
+              opacity: elementItem.style.opacity,
               fontWeight: 200,
             }}
             onChange={(e) => {}}
-            value={elementItem.text}
+            value={elementItem.details.text}
           />
         );
         break;
       case ELEMENT_TYPES.IMAGE:
+        if (!elementItem.style.width || !elementItem.style.height) return;
         element = (
           <Image
             style={{
               pointerEvents: "none",
               userSelect: "none",
-              borderRadius: elementItem.borderRadius + "px",
+              borderRadius: elementItem.style.borderRadius,
             }}
-            width={elementItem.width}
-            height={elementItem.height}
+            width={parseInt(
+              elementItem.style.width.toString().replace("px", "")
+            )}
+            height={parseInt(
+              elementItem.style.height.toString().replace("px", "")
+            )}
             src={
-              elementItem.url?.length > 0
-                ? elementItem.url
+              elementItem.details.url?.length > 0
+                ? elementItem.details.url
                 : "https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720"
             }
             alt="image-item"
@@ -222,10 +227,10 @@ const OverlayElement: React.FC<Props> = ({
             style={{
               pointerEvents: "none",
               userSelect: "none",
-              width: `${elementItem.width}px`,
-              height: `${elementItem.height}px`,
-              backgroundColor: elementItem.backgroundColor,
-              borderRadius: `${elementItem.borderRadius}px`,
+              width: elementItem.style.width,
+              height: elementItem.style.height,
+              backgroundColor: elementItem.style.backgroundColor ?? "#000000",
+              borderRadius: elementItem.style.borderRadius,
             }}
           />
         );
@@ -269,7 +274,7 @@ const OverlayElement: React.FC<Props> = ({
       startDragging();
       const x = e.pageX;
       const y = e.pageY;
-      updateCoords({ x, y }, index);
+      updateCoords({ x, y }, elementItem.id);
       setDrag(true);
       closeContextMenu();
     } else {
@@ -291,53 +296,54 @@ const OverlayElement: React.FC<Props> = ({
     }
   };
 
-  const handleResize = (
-    e: PointerEvent<HTMLDivElement>,
-    direction:
-      | "topLeft"
-      | "top"
-      | "topRight"
-      | "right"
-      | "bottomRight"
-      | "bottom"
-      | "bottomLeft"
-      | "left"
-  ) => {
-    if (e.pressure > 0 && containerRef && containerRef.current) {
-      if (elementItem.type === ELEMENT_TYPES.IMAGE) {
-        let width = elementItem.width;
-        let height = elementItem.height;
-        switch (direction) {
-          case "left":
-            if (e.pageX < containerRef.current.getBoundingClientRect().left) {
-              width =
-                elementItem.width +
-                (containerRef.current.getBoundingClientRect().left - e.pageX);
-            } else {
-              width =
-                elementItem.width -
-                (e.pageX - containerRef.current.getBoundingClientRect().left);
-            }
+  // const handleResize = (
+  //   e: PointerEvent<HTMLDivElement>,
+  //   direction:
+  //     | "topLeft"
+  //     | "top"
+  //     | "topRight"
+  //     | "right"
+  //     | "bottomRight"
+  //     | "bottom"
+  //     | "bottomLeft"
+  //     | "left"
+  // ) => {
+  //   if (e.pressure > 0 && containerRef && containerRef.current) {
+  //     if (elementItem.details.type === ELEMENT_TYPES.IMAGE) {
+  //       if (!elementItem.style.width || !elementItem.style.height) return;
+  //       let width = parseInt(
+  //         elementItem.style.width.toString().replace("px", "")
+  //       );
+  //       let height = parseInt(
+  //         elementItem.style.height.toString().replace("px", "")
+  //       );
+  //       const containerLeft = containerRef.current.getBoundingClientRect().left;
+  //       switch (direction) {
+  //         case "left":
+  //           if (e.pageX < containerLeft) {
+  //             width += containerLeft - e.pageX;
+  //           } else {
+  //             width -= e.pageX + containerLeft;
+  //           }
+  //           break;
+  //         case "top":
+  //           if (e.pageY < containerRef.current.getBoundingClientRect().top) {
+  //             height =
+  //               elementItem.details.height +
+  //               (containerRef.current.getBoundingClientRect().top - e.pageY);
+  //           } else {
+  //             height =
+  //               elementItem.details.height -
+  //               (e.pageY - containerRef.current.getBoundingClientRect().top);
+  //           }
 
-            break;
-          case "top":
-            if (e.pageY < containerRef.current.getBoundingClientRect().top) {
-              height =
-                elementItem.height +
-                (containerRef.current.getBoundingClientRect().top - e.pageY);
-            } else {
-              height =
-                elementItem.height -
-                (e.pageY - containerRef.current.getBoundingClientRect().top);
-            }
+  //           break;
+  //       }
 
-            break;
-        }
-
-        updateElementSize && updateElementSize({ width, height });
-      }
-    }
-  };
+  //       updateElementSize && updateElementSize({ width, height });
+  //     }
+  //   }
+  // };
 
   const onMouseDown = (e: PointerEvent<HTMLDivElement>) => {
     console.log(1);
@@ -351,11 +357,16 @@ const OverlayElement: React.FC<Props> = ({
     if (resizeDirection) {
       if (containerRef && containerRef.current) {
         if (
-          elementItem.type === ELEMENT_TYPES.IMAGE ||
-          elementItem.type === ELEMENT_TYPES.SQUARE
+          elementItem.details.type === ELEMENT_TYPES.IMAGE ||
+          elementItem.details.type === ELEMENT_TYPES.SQUARE
         ) {
-          let width = elementItem.width;
-          let height = elementItem.height;
+          if (!elementItem.style.width || !elementItem.style.height) return;
+          let width = parseInt(
+            elementItem.style.width.toString().replace("px", "")
+          );
+          let height = parseInt(
+            elementItem.style.height.toString().replace("px", "")
+          );
           switch (resizeDirection) {
             case "left":
               let newX = 0;
@@ -363,7 +374,7 @@ const OverlayElement: React.FC<Props> = ({
               if (e.pageX < containerRef.current.getBoundingClientRect().left) {
                 const addedWidth =
                   containerRef.current.getBoundingClientRect().left - e.pageX;
-                width = elementItem.width + addedWidth;
+                width += addedWidth;
                 if (elementItem.coords) {
                   newX = containerRef.current.getBoundingClientRect().left;
                   containerRef.current.getBoundingClientRect().left -
@@ -371,22 +382,19 @@ const OverlayElement: React.FC<Props> = ({
                   newY = elementItem.coords.y;
                 }
               } else {
-                width =
-                  elementItem.width -
-                  (e.pageX - containerRef.current.getBoundingClientRect().left);
+                width -=
+                  e.pageX - containerRef.current.getBoundingClientRect().left;
               }
-              updateCoords({ x: newX, y: newY }, index);
+              updateCoords({ x: newX, y: newY }, elementItem.id);
               updateElementSize && updateElementSize({ width, height });
               break;
             case "top":
               if (e.pageY < containerRef.current.getBoundingClientRect().top) {
-                height =
-                  elementItem.height +
-                  (containerRef.current.getBoundingClientRect().top - e.pageY);
+                height +=
+                  containerRef.current.getBoundingClientRect().top - e.pageY;
               } else {
-                height =
-                  elementItem.height -
-                  (e.pageY - containerRef.current.getBoundingClientRect().top);
+                height -=
+                  e.pageY - containerRef.current.getBoundingClientRect().top;
               }
               updateElementSize && updateElementSize({ width, height });
               break;
@@ -453,7 +461,10 @@ const OverlayElement: React.FC<Props> = ({
             selectedElement.getBoundingClientRect().x -
               element.getBoundingClientRect().x -
               element.clientWidth
-          ) <= offset ||
+          ) <= offset
+        ) {
+          isCollided = true;
+        } else if (
           Math.abs(
             selectedElement.getBoundingClientRect().x +
               selectedElement.clientWidth -
@@ -462,6 +473,8 @@ const OverlayElement: React.FC<Props> = ({
           ) <= offset
         ) {
           isCollided = true;
+        } else {
+          isCollided = false;
         }
         break;
       case "l":
@@ -493,7 +506,7 @@ const OverlayElement: React.FC<Props> = ({
       onContextMenu={handleOpenContextMenu}
       ref={containerRef}
       style={{
-        zIndex: onDrag ? 2 : 1,
+        zIndex: onDrag || selectedEleId === elementItem.id ? 10 : 1,
         left: left + "%",
         top: top + "%",
         border: isInSelectZone ? "1px dashed red" : "none",

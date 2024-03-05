@@ -66,18 +66,20 @@ const ElementPropertiesPanel: React.FC<Props> = ({
   updateElement,
 }) => {
   const renderTextElementProperties = () => {
-    if (selectedElement?.type !== ELEMENT_TYPES.TEXT) return null;
+    if (selectedElement?.details.type !== ELEMENT_TYPES.TEXT) return null;
     return (
       <>
         <PropertyContainer>
           <PropertyHeader>Nội dung</PropertyHeader>
           <PropertyValue>
             <input
-              value={selectedElement.text}
+              value={selectedElement.details.text}
               onChange={(e) => {
                 const updatedElement = Object.assign({}, selectedElement);
-                updatedElement.text = e.target.value;
-                updateElement(updatedElement);
+                if (updatedElement.details.type === ELEMENT_TYPES.TEXT) {
+                  updatedElement.details.text = e.target.value;
+                  updateElement(updatedElement);
+                }
               }}
               style={{
                 outline: "none",
@@ -94,11 +96,21 @@ const ElementPropertiesPanel: React.FC<Props> = ({
           <PropertyValue>
             <select
               style={{ width: "50px", height: "26px", outline: "none" }}
-              value={selectedElement.font_size}
+              value={
+                selectedElement.style.fontSize
+                  ? parseInt(
+                      selectedElement.style.fontSize
+                        .toString()
+                        .replace("px", "")
+                    )
+                  : 10
+              }
               onChange={(e) => {
                 const updatedElement = Object.assign({}, selectedElement);
-                updatedElement.font_size = parseInt(e.target.value);
-                updateElement(updatedElement);
+                if (updatedElement.details.type === ELEMENT_TYPES.TEXT) {
+                  updatedElement.style.fontSize = e.target.value + "px";
+                  updateElement(updatedElement);
+                }
               }}
             >
               {Array(51)
@@ -116,11 +128,13 @@ const ElementPropertiesPanel: React.FC<Props> = ({
           <PropertyHeader>Màu sắc</PropertyHeader>
           <PropertyValue>
             <ColorInput
-              color={selectedElement.font_color}
+              color={selectedElement.style.color ?? "#000000"}
               onChange={(color) => {
                 const updatedElement = Object.assign({}, selectedElement);
-                updatedElement.font_color = color;
-                updateElement(updatedElement);
+                if (updatedElement.details.type === ELEMENT_TYPES.TEXT) {
+                  updatedElement.style.color = color;
+                  updateElement(updatedElement);
+                }
               }}
             />
           </PropertyValue>
@@ -141,8 +155,8 @@ const ElementPropertiesPanel: React.FC<Props> = ({
 
   const renderImgElementProperties = () => {
     if (
-      selectedElement?.type !== ELEMENT_TYPES.IMAGE &&
-      selectedElement?.type !== ELEMENT_TYPES.SQUARE
+      selectedElement?.details.type !== ELEMENT_TYPES.IMAGE &&
+      selectedElement?.details.type !== ELEMENT_TYPES.SQUARE
     )
       return null;
     return (
@@ -153,20 +167,51 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               title="W"
               decrement={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.width = updatedElement.width - step;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  if (!updatedElement.style.width) return;
+                  const currentWidth = parseInt(
+                    updatedElement.style.width.toString().replace("px", "")
+                  );
+                  const updatedWidth = currentWidth - step;
+                  updatedElement.style.width = updatedWidth + "px";
+                  updateElement(updatedElement);
+                }
               }}
               increment={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.width += step;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  if (!updatedElement.style.width) return;
+                  const currentWidth = parseInt(
+                    updatedElement.style.width.toString().replace("px", "")
+                  );
+                  const updatedWidth = currentWidth + step;
+                  updatedElement.style.width = updatedWidth + "px";
+                  updateElement(updatedElement);
+                }
               }}
               onChange={(value) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.width = value;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  updatedElement.style.width = value + "px";
+                  updateElement(updatedElement);
+                }
               }}
-              value={selectedElement.width}
+              value={
+                selectedElement.style.width
+                  ? parseInt(
+                      selectedElement.style.width.toString().replace("px", "")
+                    )
+                  : 0
+              }
             />
           </PropertyContainer>
           <PropertyContainer style={{ width: "50%" }}>
@@ -174,20 +219,51 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               title="H"
               decrement={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.height = updatedElement.height - step;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  if (!updatedElement.style.height) return;
+                  const currentHeight = parseInt(
+                    updatedElement.style.height.toString().replace("px", "")
+                  );
+                  const updatedHeight = currentHeight - step;
+                  updatedElement.style.height = updatedHeight + "px";
+                  updateElement(updatedElement);
+                }
               }}
               increment={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.height += step;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  if (!updatedElement.style.height) return;
+                  const currentHeight = parseInt(
+                    updatedElement.style.height.toString().replace("px", "")
+                  );
+                  const updatedHeight = currentHeight + step;
+                  updatedElement.style.height = updatedHeight + "px";
+                  updateElement(updatedElement);
+                }
               }}
               onChange={(value) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.height = value;
-                updateElement(updatedElement);
+                if (
+                  updatedElement.details.type === ELEMENT_TYPES.IMAGE ||
+                  updatedElement.details.type === ELEMENT_TYPES.SQUARE
+                ) {
+                  updatedElement.style.height = value + "px";
+                  updateElement(updatedElement);
+                }
               }}
-              value={selectedElement.height}
+              value={
+                selectedElement.style.height
+                  ? parseInt(
+                      selectedElement.style.height.toString().replace("px", "")
+                    )
+                  : 0
+              }
             />
           </PropertyContainer>
           <PropertyContainer style={{ width: "50%" }}>
@@ -310,50 +386,84 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               title="B"
               decrement={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.borderRadius -= step;
-                updateElement(updatedElement);
+                if (updatedElement.details.type !== ELEMENT_TYPES.TEXT) {
+                  console.log(updatedElement.style)
+                  if (!updatedElement.style.borderRadius) return;
+                  const currentRadius = parseInt(
+                    updatedElement.style.borderRadius
+                      .toString()
+                      .replace("px", "")
+                  );
+
+                  const updatedRadius = currentRadius - step;
+                  updatedElement.style.borderRadius = updatedRadius + "px";
+                  updateElement(updatedElement);
+                }
               }}
               increment={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.borderRadius += step;
-                updateElement(updatedElement);
+                if (updatedElement.details.type !== ELEMENT_TYPES.TEXT) {
+                  if (!updatedElement.style.borderRadius) return;
+                  const currentRadius = parseInt(
+                    updatedElement.style.borderRadius
+                      .toString()
+                      .replace("px", "")
+                  );
+                  const updatedRadius = currentRadius + step;
+                  updatedElement.style.borderRadius = updatedRadius + "px";
+                  updateElement(updatedElement);
+                }
               }}
               onChange={(value) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.borderRadius = value;
-                updateElement(updatedElement);
+                if (updatedElement.details.type !== ELEMENT_TYPES.TEXT) {
+                  updatedElement.style.borderRadius = value + "px";
+                  updateElement(updatedElement);
+                }
               }}
-              value={selectedElement.borderRadius}
+              value={
+                selectedElement.style.borderRadius
+                  ? parseInt(
+                      selectedElement.style.borderRadius
+                        .toString()
+                        .replace("px", "")
+                    )
+                  : 0
+              }
             />
           </PropertyContainer>
         </div>
-        {selectedElement.type === ELEMENT_TYPES.SQUARE && (
+        {selectedElement.details.type === ELEMENT_TYPES.SQUARE && (
           <>
             <PropertyContainer>
               <PropertyHeader>Màu nền</PropertyHeader>
               <PropertyValue>
                 <ColorInput
-                  color={selectedElement.backgroundColor}
+                  color={selectedElement.style.backgroundColor ?? "#000000"}
                   onChange={(color) => {
                     const updatedElement = Object.assign({}, selectedElement);
-                    updatedElement.backgroundColor = color;
-                    updateElement(updatedElement);
+                    if (updatedElement.details.type === ELEMENT_TYPES.SQUARE) {
+                      updatedElement.style.backgroundColor = color;
+                      updateElement(updatedElement);
+                    }
                   }}
                 />
               </PropertyValue>
             </PropertyContainer>
           </>
         )}
-        {selectedElement.type === ELEMENT_TYPES.IMAGE && (
+        {selectedElement.details.type === ELEMENT_TYPES.IMAGE && (
           <PropertyContainer>
             <PropertyHeader>Hình ảnh</PropertyHeader>
             <PropertyValue>
               <input
-                value={selectedElement.url}
+                value={selectedElement.details.url}
                 onChange={(e) => {
                   const updatedElement = Object.assign({}, selectedElement);
-                  updatedElement.url = e.target.value;
-                  updateElement(updatedElement);
+                  if (updatedElement.details.type === ELEMENT_TYPES.IMAGE) {
+                    updatedElement.details.url = e.target.value;
+                    updateElement(updatedElement);
+                  }
                 }}
               />
             </PropertyValue>
@@ -365,10 +475,10 @@ const ElementPropertiesPanel: React.FC<Props> = ({
 
   return (
     <Container>
-      {selectedElement?.type === ELEMENT_TYPES.TEXT &&
+      {selectedElement?.details.type === ELEMENT_TYPES.TEXT &&
         renderTextElementProperties()}
-      {(selectedElement?.type === ELEMENT_TYPES.IMAGE ||
-        selectedElement?.type === ELEMENT_TYPES.SQUARE) &&
+      {(selectedElement?.details.type === ELEMENT_TYPES.IMAGE ||
+        selectedElement?.details.type === ELEMENT_TYPES.SQUARE) &&
         renderImgElementProperties()}
     </Container>
   );

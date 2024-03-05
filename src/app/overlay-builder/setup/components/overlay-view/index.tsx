@@ -37,12 +37,58 @@ const SelectZone = styled.div`
   pointer-events: none;
 `;
 
+const TopLine = styled.div`
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  z-index: 50;
+  background-color: #ea745b;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+`;
+
+const LeftLine = styled.div`
+  width: 1px;
+  height: 100%;
+  position: absolute;
+  z-index: 50;
+  background-color: #ea745b;
+  left: 0px;
+  user-select: none;
+  pointer-events: none;
+`;
+
+const BottomLine = styled.div`
+  width: 100%;
+  height: 1px;
+  bottom: 0;
+  position: absolute;
+  z-index: 50;
+  background-color: #ea745b;
+  left: 0px;
+  user-select: none;
+  pointer-events: none;
+`;
+
+const RightLine = styled.div`
+  width: 1px;
+  height: 100%;
+  top: 0;
+  position: absolute;
+  z-index: 50;
+  background-color: #ea745b;
+  right: 0px;
+  user-select: none;
+  pointer-events: none;
+`;
+
 const CenterLine = styled.div`
   width: 1px;
   height: 100%;
   position: absolute;
   z-index: 50;
-  background-color: #ffcc80;
+  background-color: #ea745b;
   transform: translateX(-50%);
   left: 50%;
   user-select: none;
@@ -54,7 +100,7 @@ const MiddleLine = styled.div`
   width: 100%;
   position: absolute;
   z-index: 50;
-  background-color: #ffcc80;
+  background-color: #ea745b;
   transform: translateY(-50%);
   left: 0;
   top: 50%;
@@ -106,6 +152,10 @@ const OverlayView: React.FC<Props> = ({
   setInSelectZoneIds,
   setCopyType,
 }) => {
+  const topLineRef = useRef<HTMLDivElement>(null);
+  const leftLineRef = useRef<HTMLDivElement>(null);
+  const rightLineRef = useRef<HTMLDivElement>(null);
+  const bottomLineRef = useRef<HTMLDivElement>(null);
   const centerLineRef = useRef<HTMLDivElement>(null);
   const middleLineRef = useRef<HTMLDivElement>(null);
   const [selectedEleId, setSelectedEleId] = useState("");
@@ -114,8 +164,12 @@ const OverlayView: React.FC<Props> = ({
   const { background_ratio, background_url } = overlayMetadata;
   const [isPress, setIsPress] = useState(false);
   const [isDraggingElement, setDraggingElement] = useState(false);
+  const [isTop, setTop] = useState(false);
+  const [isLeft, setLeft] = useState(false);
   const [isCenter, setCenter] = useState(false);
   const [isMiddle, setMiddle] = useState(false);
+  const [isBottom, setBottom] = useState(false);
+  const [isRight, setRight] = useState(false);
   const [startCoord, setStartCoord] = useState<{ x: number; y: number } | null>(
     null
   );
@@ -159,8 +213,6 @@ const OverlayView: React.FC<Props> = ({
       canDrop: monitor.canDrop(),
     }),
   }));
-
-  const isActive = canDrop && isOver;
 
   const handleMouseDown = (e: MouseEventReact) => {
     if (currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
@@ -223,24 +275,61 @@ const OverlayView: React.FC<Props> = ({
   const handleMouseMove2 = useCallback(
     (e: MouseEvent) => {
       if (
+        topLineRef?.current &&
+        leftLineRef?.current &&
         centerLineRef?.current &&
         middleLineRef?.current &&
+        bottomLineRef?.current &&
+        rightLineRef?.current &&
         isDraggingElement
       ) {
-        const offset = 10;
-        const centerLineX = centerLineRef.current.getBoundingClientRect().x;
-        const centerLineWidth = centerLineRef.current.clientWidth;
-        const middleLineY = centerLineRef.current.getBoundingClientRect().y;
-        const middleLineHeight = centerLineRef.current.clientHeight;
-        const centerPointX = centerLineX + centerLineWidth / 2;
-        const middlePointY = middleLineY + middleLineHeight / 2;
-        const isCenter = Math.abs(e.pageX - centerPointX) <= offset;
-        const isMiddle = Math.abs(e.pageY - middlePointY) <= offset;
-        const x = isCenter ? centerPointX : e.pageX;
-        const y = isMiddle ? middlePointY : e.pageY;
-        setCenter(isCenter);
-        setMiddle(isMiddle);
-        updateElementCoords({ x, y }, selectedEleId);
+        if (selectedEleId !== "") {
+          const element = document.getElementById(selectedEleId);
+          if (!element) return;
+          const offset = 10;
+          const topLineY = topLineRef.current.getBoundingClientRect().y;
+          const bottomLineY = bottomLineRef.current.getBoundingClientRect().y;
+          const leftLineX = leftLineRef.current.getBoundingClientRect().x;
+          const rightLineX = rightLineRef.current.getBoundingClientRect().x;
+          const centerLineX = centerLineRef.current.getBoundingClientRect().x;
+          const centerLineWidth = centerLineRef.current.clientWidth;
+          const middleLineY = centerLineRef.current.getBoundingClientRect().y;
+          const middleLineHeight = centerLineRef.current.clientHeight;
+          const centerPointX = centerLineX + centerLineWidth / 2;
+          const middlePointY = middleLineY + middleLineHeight / 2;
+          const isTop =
+            Math.abs(element.getBoundingClientRect().y - topLineY + 1) <= 2;
+          const isBottom =
+            Math.abs(
+              element.getBoundingClientRect().y +
+                element.clientHeight -
+                bottomLineY -
+                1
+            ) <= 2;
+          const isLeft =
+            Math.abs(element.getBoundingClientRect().x - leftLineX + 1) <= 2;
+          const isRight =
+            Math.abs(
+              element.getBoundingClientRect().x +
+                element.clientWidth -
+                rightLineX -
+                1
+            ) <= 2;
+          const isCenter = Math.abs(e.pageX - centerPointX) <= offset;
+          const isMiddle = Math.abs(e.pageY - middlePointY) <= offset;
+          let x = e.pageX;
+          if (isCenter) {
+            x = centerPointX;
+          }
+          const y = isMiddle ? middlePointY : e.pageY;
+          setCenter(isCenter);
+          setMiddle(isMiddle);
+          setTop(isTop);
+          setLeft(isLeft);
+          setBottom(isBottom);
+          setRight(isRight);
+          updateElementCoords({ x, y }, selectedEleId);
+        }
       }
     },
     [isDraggingElement, selectedEleId, updateElementCoords]
@@ -351,6 +440,10 @@ const OverlayView: React.FC<Props> = ({
         $ratio={background_ratio}
         $bgURL={background_url}
       >
+        <TopLine style={{ opacity: isTop ? 1 : 0 }} ref={topLineRef} />
+        <LeftLine style={{ opacity: isLeft ? 1 : 0 }} ref={leftLineRef} />
+        <BottomLine style={{ opacity: isBottom ? 1 : 0 }} ref={bottomLineRef} />
+        <RightLine style={{ opacity: isRight ? 1 : 0 }} ref={rightLineRef} />
         <CenterLine style={{ opacity: isCenter ? 1 : 0 }} ref={centerLineRef} />
         <MiddleLine style={{ opacity: isMiddle ? 1 : 0 }} ref={middleLineRef} />
         {overlayMetadata.elements.map((element, i) => (
@@ -366,8 +459,8 @@ const OverlayView: React.FC<Props> = ({
               setSelectedEleId(element.id);
               selectElement(element.id);
             }}
-            updateCoords={(newCoords, index) =>
-              updateElementCoords(newCoords, element.id)
+            updateCoords={(newCoords, eleId) =>
+              updateElementCoords(newCoords, eleId)
             }
             key={element.id}
             index={i}
@@ -376,8 +469,8 @@ const OverlayView: React.FC<Props> = ({
             isInSelectZone={inSelectZoneIds.includes(element.id)}
             updateElementSize={(newSize) => {
               if (
-                element.type === ELEMENT_TYPES.IMAGE ||
-                element.type === ELEMENT_TYPES.SQUARE
+                element.details.type === ELEMENT_TYPES.IMAGE ||
+                element.details.type === ELEMENT_TYPES.SQUARE
               ) {
                 updateElementSize(newSize, element.id);
               }
@@ -386,6 +479,10 @@ const OverlayView: React.FC<Props> = ({
             endDragging={() => {
               setCenter(false);
               setMiddle(false);
+              setLeft(false);
+              setRight(false);
+              setTop(false);
+              setBottom(false);
               setDraggingElement(false);
             }}
             onClick={() => {

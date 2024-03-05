@@ -8,6 +8,7 @@ import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
+import CodeEditor from "@uiw/react-textarea-code-editor";
 import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
@@ -208,6 +209,8 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const [isOpenCodeGenModal, setOpenCodeGenModal] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>("");
   const { get: getCB, write: writeCB } = useClipboard();
   const { pressedKies, setPressedKies } = useKeyboard();
   const [copyType, setCopyType] = useState<"copy" | "cut">("copy");
@@ -302,17 +305,21 @@ const SetupPage = () => {
   const addText = (coords: XYCoord | null, relativeCoords: XYCoord | null) => {
     let updatedOverlayMetaHistories = [...overlayMetaHistories];
     if (updatedOverlayMetaHistories.length === 0) {
-      const textItem: TextElement = {
+      const textItem: Element = {
+        id: "element_1",
         coords,
         relativeCoords,
-        font_color: "#ffffff",
-        font_size: 20,
-        font_weight: 400,
-        opacity: 1,
-        text: "New Text",
-        type: ELEMENT_TYPES.TEXT,
-        id: "element_1",
         rotate: 0,
+        style: {
+          color: "#ffffff",
+          fontSize: "20px",
+          fontWeight: 400,
+          opacity: 1,
+        },
+        details: {
+          text: "New Text",
+          type: ELEMENT_TYPES.TEXT,
+        },
       };
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -326,17 +333,21 @@ const SetupPage = () => {
       const lastEleNo =
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
           .lastEleNo;
-      const textItem: TextElement = {
+      const textItem: Element = {
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        font_color: "#ffffff",
-        font_size: 20,
-        font_weight: 400,
-        opacity: 1,
-        text: "New Text",
-        type: ELEMENT_TYPES.TEXT,
-        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         rotate: 0,
+        style: {
+          color: "#ffffff",
+          fontSize: "20px",
+          fontWeight: 400,
+          opacity: 1,
+        },
+        details: {
+          text: "New Text",
+          type: ELEMENT_TYPES.TEXT,
+        },
       };
       if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
         updatedOverlayMetaHistories.push({
@@ -382,16 +393,20 @@ const SetupPage = () => {
   const addImage = (coords: XYCoord | null, relativeCoords: XYCoord | null) => {
     let updatedOverlayMetaHistories = [...overlayMetaHistories];
     if (updatedOverlayMetaHistories.length === 0) {
-      const imageItem: ImageElement = {
+      const imageItem: Element = {
+        id: `element_1`,
         coords,
         relativeCoords,
-        url: "",
-        type: ELEMENT_TYPES.IMAGE,
-        width: 100,
-        height: 100,
-        id: `element_1`,
         rotate: 0,
-        borderRadius: 0,
+        style: {
+          width: "100px",
+          height: "100px",
+          borderRadius: "0px",
+        },
+        details: {
+          url: "",
+          type: ELEMENT_TYPES.IMAGE,
+        },
       };
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -405,16 +420,20 @@ const SetupPage = () => {
       const lastEleNo =
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
           .lastEleNo;
-      const imageItem: ImageElement = {
+      const imageItem: Element = {
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        url: "",
-        type: ELEMENT_TYPES.IMAGE,
-        width: 100,
-        height: 100,
-        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         rotate: 0,
-        borderRadius: 0,
+        style: {
+          width: "100px",
+          height: "100px",
+          borderRadius: "0px",
+        },
+        details: {
+          url: "",
+          type: ELEMENT_TYPES.IMAGE,
+        },
       };
       if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
         const newOverlayMetaHistoryItem = structuredClone(
@@ -452,16 +471,20 @@ const SetupPage = () => {
   ) => {
     let updatedOverlayMetaHistories = [...overlayMetaHistories];
     if (updatedOverlayMetaHistories.length === 0) {
-      const squareItem: SquareElement = {
+      const squareItem: Element = {
+        id: `element_1`,
         coords,
         relativeCoords,
-        backgroundColor: "#FF0000",
-        type: ELEMENT_TYPES.SQUARE,
-        width: 100,
-        height: 100,
-        id: `element_1`,
         rotate: 0,
-        borderRadius: 0,
+        style: {
+          width: "100px",
+          height: "100px",
+          borderRadius: "0px",
+          backgroundColor: "#FF0000",
+        },
+        details: {
+          type: ELEMENT_TYPES.SQUARE,
+        },
       };
       updatedOverlayMetaHistories.push({
         background_ratio: [16, 9],
@@ -475,16 +498,20 @@ const SetupPage = () => {
       const lastEleNo =
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
           .lastEleNo;
-      const squareItem: SquareElement = {
+      const squareItem: Element = {
+        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        backgroundColor: "#FF0000",
-        type: ELEMENT_TYPES.SQUARE,
-        width: 100,
-        height: 100,
-        id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         rotate: 0,
-        borderRadius: 0,
+        style: {
+          width: "100px",
+          height: "100px",
+          borderRadius: "0px",
+          backgroundColor: "#FF0000",
+        },
+        details: {
+          type: ELEMENT_TYPES.SQUARE,
+        },
       };
       if (currentHistoryIndex === updatedOverlayMetaHistories.length - 1) {
         const newOverlayMetaHistoryItem = structuredClone(
@@ -575,11 +602,11 @@ const SetupPage = () => {
       currentHistoryIndex + 1
     ].elements.filter((ele) => ele.id === elementId)[0];
     if (
-      element.type === ELEMENT_TYPES.IMAGE ||
-      element.type === ELEMENT_TYPES.SQUARE
+      element.details.type === ELEMENT_TYPES.IMAGE ||
+      element.details.type === ELEMENT_TYPES.SQUARE
     ) {
-      element.width = newSize.width;
-      element.height = newSize.height;
+      element.style.width = newSize.width;
+      element.style.height = newSize.height;
     }
     setOverlayMetaHistories(updatedOverlayMetaHistories);
     setCurrentHistoryIndex(currentHistoryIndex + 1);
@@ -891,6 +918,71 @@ const SetupPage = () => {
     }
   };
 
+  const generateRenderChildElementsCode = () => {
+    let text = "\n";
+    overlayMetaHistories[currentHistoryIndex].elements.forEach((ele) => {
+      const eleId =
+        ele.id.substring(0, 1).toUpperCase() +
+        ele.id.substring(1, ele.id.length);
+      text += `\t     <${eleId.replace("_", "")} /> \n`;
+    });
+    return text;
+  };
+
+  const generateCode = () => {
+    setOpenCodeGenModal(true);
+    const containerElement = document.getElementById("drop-zone-element");
+    if (!containerElement) return;
+    const containerEleWidth = containerElement.clientWidth;
+    const containerEleHeight = containerElement.clientHeight;
+    let text = `import styled from "styled-components" \n\n`;
+    let stylesText = `const Container = styled.div${"`"}\n`;
+    stylesText += `\tposition: absolute;\n`;
+    stylesText += `\ttop: 0;\n`;
+    stylesText += `\tleft: 0;\n`;
+    stylesText += `\twidth: 100%;\n`;
+    stylesText += `\theight: 100%;\n`;
+    stylesText += `\tbackground-image: url("${overlayMetaHistories[currentHistoryIndex].background_url}");\n`;
+    stylesText += `${"`"};\n\n`;
+    overlayMetaHistories[currentHistoryIndex].elements.forEach((ele) => {
+      const eleId =
+        ele.id.substring(0, 1).toUpperCase() +
+        ele.id.substring(1, ele.id.length);
+      let styleText = `const ${eleId.replace("_", "")} = styled.div${"`"}\n`;
+      styleText += `\tposition: absolute;\n`;
+      styleText += `\tleft: ${
+        ele.relativeCoords?.x
+          ? parseInt(
+              ((ele.relativeCoords.x / containerEleWidth) * 100).toString()
+            )
+          : 0
+      }%;\n`;
+      styleText += `\ttop: ${
+        ele.relativeCoords?.y
+          ? parseInt(
+              ((ele.relativeCoords.y / containerEleHeight) * 100).toString()
+            )
+          : 0
+      }%;\n`;
+      Object.keys(ele.style).forEach((key) => {
+        const formattedKey = key
+          .split(/(?=[A-Z])/)
+          .join("-")
+          .toLowerCase();
+        const value = ele.style[key as keyof typeof ele.style];
+        styleText += `\t${formattedKey}: ${value};\n`;
+      });
+      styleText += `${"`"}`;
+      stylesText += styleText + "; \n\n";
+    });
+    text += stylesText;
+    text += "\n";
+    text += `const MyComponent = () => { \n\treturn (\n\t  <Container>${generateRenderChildElementsCode()}\t  </Container>\n\t) \n}\n\n`;
+    text += `export default MyComponent;`;
+    console.log(text);
+    setGeneratedCode(text);
+  };
+
   function stopEvent(event: any) {
     if (event.preventDefault != undefined) event.preventDefault();
     if (event.stopPropagation != undefined) event.stopPropagation();
@@ -936,7 +1028,7 @@ const SetupPage = () => {
         console.error(error);
       }
     };
-
+    if (isOpenCodeGenModal) return;
     if (pressedKies.length > 0) {
       if (pressedKies.length === 1) {
         if (
@@ -1087,7 +1179,8 @@ const SetupPage = () => {
           </div>
         </HeaderCenter>
         <HeaderRight>
-          <button onClick={downloadLayout}>Tải layout</button>
+          {/* <button onClick={downloadLayout}>Tải layout</button> */}
+          <button onClick={generateCode}>Generate Code</button>
           <button onClick={applyLayout}>Áp dụng layout</button>
         </HeaderRight>
       </Header>
@@ -1157,6 +1250,28 @@ const SetupPage = () => {
           />
         </Right>
       </Body>
+      {isOpenCodeGenModal && (
+        <CodeEditor
+          value={generatedCode ?? ""}
+          language="js"
+          data-color-mode="dark"
+          onChange={(e) => {}}
+          style={{
+            position: "fixed",
+            top: "2.5%",
+            left: "10%",
+            width: "80%",
+            height: "95%",
+            overflowY: "scroll",
+            backgroundColor: "black",
+            zIndex: 100,
+            boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
+            padding: "10px 10px",
+            fontFamily:
+              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+          }}
+        />
+      )}
     </Container>
   );
 };
