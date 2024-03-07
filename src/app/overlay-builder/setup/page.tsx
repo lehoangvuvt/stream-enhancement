@@ -309,12 +309,12 @@ const SetupPage = () => {
         id: "element_1",
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           color: "#ffffff",
           fontSize: "20px",
           fontWeight: 400,
           opacity: 1,
+          transform: "rotate(0deg)",
         },
         details: {
           text: "New Text",
@@ -337,12 +337,12 @@ const SetupPage = () => {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           color: "#ffffff",
           fontSize: "20px",
           fontWeight: 400,
           opacity: 1,
+          transform: "rotate(0deg)",
         },
         details: {
           text: "New Text",
@@ -397,11 +397,11 @@ const SetupPage = () => {
         id: `element_1`,
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           width: "100px",
           height: "100px",
           borderRadius: "0px",
+          transform: "rotate(0deg)",
         },
         details: {
           url: "",
@@ -424,11 +424,11 @@ const SetupPage = () => {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           width: "100px",
           height: "100px",
           borderRadius: "0px",
+          transform: "rotate(0deg)",
         },
         details: {
           url: "",
@@ -475,12 +475,12 @@ const SetupPage = () => {
         id: `element_1`,
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           width: "100px",
           height: "100px",
           borderRadius: "0px",
           backgroundColor: "#FF0000",
+          transform: "rotate(0deg)",
         },
         details: {
           type: ELEMENT_TYPES.SQUARE,
@@ -502,12 +502,12 @@ const SetupPage = () => {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
-        rotate: 0,
         style: {
           width: "100px",
           height: "100px",
           borderRadius: "0px",
           backgroundColor: "#FF0000",
+          transform: "rotate(0deg)",
         },
         details: {
           type: ELEMENT_TYPES.SQUARE,
@@ -674,7 +674,10 @@ const SetupPage = () => {
   );
 
   const pasteElement = useCallback(
-    async (coord: { x: number; y: number }) => {
+    async (
+      coord: { x: number; y: number },
+      relaviteCoord: { x: number; y: number }
+    ) => {
       let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
       const data = await getCB<{
         copiedElement: Element | null;
@@ -686,6 +689,7 @@ const SetupPage = () => {
           .lastEleNo;
       const pastedElement = structuredClone(copiedElement);
       pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
+      pastedElement.relativeCoords = { x: relaviteCoord.x, y: relaviteCoord.y };
       pastedElement.coords = { x: coord.x, y: coord.y };
       if (currentHistoryIndex < overlayMetaHistories.length - 1) {
         updatedOverlayMetaHistories = updatedOverlayMetaHistories.slice(
@@ -1066,10 +1070,16 @@ const SetupPage = () => {
           // handleClipboardContent();
 
           if (copiedElement) {
-            pasteElement({
-              x: copiedElement.coords!.x + 25,
-              y: copiedElement.coords!.y + 25,
-            });
+            pasteElement(
+              {
+                x: copiedElement.coords!.x + 25,
+                y: copiedElement.coords!.y + 25,
+              },
+              {
+                x: copiedElement.relativeCoords!.x + 25,
+                y: copiedElement.relativeCoords!.y + 25,
+              }
+            );
           } else {
             pasteMultipleElements();
           }

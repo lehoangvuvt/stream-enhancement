@@ -517,7 +517,7 @@ const OverlayElement: React.FC<Props> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        rotate: elementItem.rotate + "deg",
+        transform: elementItem.style.transform
       }}
     >
       <ColliedBorder

@@ -365,20 +365,48 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               title="R"
               decrement={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.rotate -= step;
+                if (!updatedElement.style.transform) return;
+                const currentRotate = parseInt(
+                  updatedElement.style.transform
+                    .toString()
+                    .split("(")[1]
+                    .replace("deg", "")
+                    .replace(")", "")
+                );
+                const updatedRotate = currentRotate - step;
+                updatedElement.style.transform = `rotate(${updatedRotate}deg)`;
                 updateElement(updatedElement);
               }}
               increment={(step) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.rotate += step;
+                if (!updatedElement.style.transform) return;
+                const currentRotate = parseInt(
+                  updatedElement.style.transform
+                    .toString()
+                    .split("(")[1]
+                    .replace("deg", "")
+                    .replace(")", "")
+                );
+                const updatedRotate = currentRotate + step;
+                updatedElement.style.transform = `rotate(${updatedRotate}deg)`;
                 updateElement(updatedElement);
               }}
               onChange={(value) => {
                 const updatedElement = structuredClone(selectedElement);
-                updatedElement.rotate = value;
+                updatedElement.style.transform = `rotate(${value}deg)`;
                 updateElement(updatedElement);
               }}
-              value={selectedElement.rotate}
+              value={
+                selectedElement.style.transform
+                  ? parseInt(
+                      selectedElement.style.transform
+                        .toString()
+                        .split("(")[1]
+                        .replace("deg", "")
+                        .replace(")", "")
+                    )
+                  : 0
+              }
             />
           </PropertyContainer>
           <PropertyContainer style={{ width: "50%" }}>
@@ -387,7 +415,7 @@ const ElementPropertiesPanel: React.FC<Props> = ({
               decrement={(step) => {
                 const updatedElement = structuredClone(selectedElement);
                 if (updatedElement.details.type !== ELEMENT_TYPES.TEXT) {
-                  console.log(updatedElement.style)
+                  console.log(updatedElement.style);
                   if (!updatedElement.style.borderRadius) return;
                   const currentRadius = parseInt(
                     updatedElement.style.borderRadius

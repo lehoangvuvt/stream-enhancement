@@ -68,7 +68,7 @@ type Props = {
   deleteElement: () => void;
   copyElement: () => void;
   cutElement: () => void;
-  pasteElement: (cord: { x: number; y: number }) => void;
+  pasteElement: (coord: { x: number; y: number }) => void;
   pasteMultipleElements: (cord: { x: number; y: number }) => void;
   copiedElement: Element | null;
   copiedElements: Element[];

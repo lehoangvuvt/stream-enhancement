@@ -28,7 +28,6 @@ export enum CURSOR_TOOL_OPTIONS {
 export type Element = {
   id: string;
   coords: XYCoord | null;
-  rotate: number;
   relativeCoords: XYCoord | null;
   style: React.CSSProperties;
   details: TextElement | ImageElement | SquareElement;

@@ -122,7 +122,10 @@ type Props = {
     elementId: string
   ) => void;
   exportContainerRef: any;
-  pasteElement: (cord: { x: number; y: number }) => void;
+  pasteElement: (
+    coord: { x: number; y: number },
+    relativeCoord: { x: number; y: number }
+  ) => void;
   pasteMultipleElements: (cord: { x: number; y: number }) => void;
   copiedElement: Element | null;
   copiedElements: Element[];
@@ -498,7 +501,35 @@ const OverlayView: React.FC<Props> = ({
           selectEleId={selectedEleId}
           copiedElement={copiedElement}
           copiedElements={copiedElements}
-          pasteElement={(coord) => pasteElement(coord)}
+          pasteElement={(coord) => {
+            const containerEle = document.getElementById("drop-zone-element");
+            if (
+              !containerEle ||
+              !copiedElement ||
+              !copiedElement.style.width ||
+              !copiedElement.style.height
+            )
+              return;
+            const containerX = containerEle.getBoundingClientRect().x;
+            const containerY = containerEle.getBoundingClientRect().y;
+            const relativeCoord = {
+              x:
+                coord.x -
+                containerX -
+                parseInt(
+                  copiedElement.style.width.toString().replace("px", "")
+                ) /
+                  2,
+              y:
+                coord.y -
+                containerY -
+                parseInt(
+                  copiedElement.style.height.toString().replace("px", "")
+                ) /
+                  2,
+            };
+            pasteElement(coord, relativeCoord);
+          }}
           pasteMultipleElements={(coord) => pasteMultipleElements(coord)}
           copyElement={() => {
             setSelectedEleId("");

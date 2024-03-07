@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import styled from "styled-components";
 
@@ -11,63 +11,81 @@ const Container = styled.div`
   background-image: url("https://marketplace.canva.com/EAE-DjUuNCg/1/0/1600w/canva-black-and-turquoise-futuristic-twitch-webcam-overlay-template-9JzFgOqnVtw.jpg");
 `;
 
-const Element1 = styled.div`
+const Element10 = styled.div`
   position: absolute;
   left: 44%;
   top: 39%;
   width: 100px;
   height: 100px;
-  border-radius: 39px;
-  background-color: #533cdc;
+  border-radius: 0px;
+  background-color: #ff0000;
+  transform: rotate(0deg);
 `;
 
-const Element2 = styled.div`
+const Element11 = styled.div`
   position: absolute;
   left: 44%;
-  top: 69%;
+  top: 39%;
   width: 100px;
   height: 100px;
   border-radius: 0px;
   background-color: #ff0000;
+  transform: rotate(14deg);
 `;
 
-const Element3 = styled.div`
+const Element12 = styled.div`
   position: absolute;
   left: 44%;
-  top: 11%;
+  top: 39%;
   width: 100px;
   height: 100px;
-  border-radius: 13px;
+  border-radius: 0px;
+  background-color: #ff0000;
+  transform: rotate(32deg);
 `;
 
-const Element4 = styled.div`
+const Element13 = styled.div`
   position: absolute;
-  left: 12%;
-  top: 34%;
+  left: 44%;
+  top: 39%;
   width: 100px;
   height: 100px;
-  border-radius: 39px;
-  background-color: #533cdc;
+  border-radius: 0px;
+  background-color: #ff0000;
+  transform: rotate(48deg);
 `;
 
-const Element5 = styled.div`
+const Element14 = styled.div`
   position: absolute;
-  left: 71%;
-  top: 34%;
+  left: 44%;
+  top: 39%;
+  width: 100px; 
+  height: 100px;
+  border-radius: 0px;
+  background-color: #ff0000;
+  transform: rotate(64deg);
+`;
+
+const Element15 = styled.div`
+  position: absolute;
+  left: 44%;
+  top: 39%;
   width: 100px;
   height: 100px;
-  border-radius: 39px;
-  background-color: #3ee96a;
+  border-radius: 0px;
+  background-color: #ff0000;
+  transform: rotate(75deg);
 `;
 
 const MyComponent = () => {
   return (
     <Container>
-      <Element1 />
-      <Element2 />
-      <Element3 />
-      <Element4 />
-      <Element5 />
+      <Element10 />
+      <Element11 />
+      <Element12 />
+      <Element13 />
+      <Element14 />
+      <Element15 />
     </Container>
   );
 };
