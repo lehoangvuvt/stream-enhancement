@@ -499,14 +499,14 @@ const OverlayElement: React.FC<Props> = ({
     return isCollided;
   };
 
-  return (
+  return elementItem.isShow ? (
     <Container
       id={elementItem.id}
       onClick={() => onClick()}
       onContextMenu={handleOpenContextMenu}
       ref={containerRef}
       style={{
-        zIndex: onDrag || selectedEleId === elementItem.id ? 10 : 1,
+        zIndex: elementItem.order + 10,
         left: left + "%",
         top: top + "%",
         border: isInSelectZone ? "1px dashed red" : "none",
@@ -517,7 +517,7 @@ const OverlayElement: React.FC<Props> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        transform: elementItem.style.transform
+        transform: elementItem.style.transform,
       }}
     >
       <ColliedBorder
@@ -571,7 +571,7 @@ const OverlayElement: React.FC<Props> = ({
 
       {renderElementByType()}
     </Container>
-  );
+  ) : null;
 };
 
 export default OverlayElement;

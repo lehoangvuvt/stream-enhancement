@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import BackgroundItem, { TBackgroundItem } from "./components/background-item";
 import OverlayView from "./components/overlay-view";
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
@@ -13,9 +13,6 @@ import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
-  ImageElement,
-  SquareElement,
-  TextElement,
 } from "@/app/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
 import OBSWebSocket from "obs-websocket-js";
@@ -25,6 +22,7 @@ import ImageItem from "./components/elements/image-item";
 import useKeyboard from "@/hooks/useKeyboard";
 import useClipboard from "@/hooks/useClipboard";
 import SquareItem from "./components/elements/square-item";
+import Layers from "./components/overlay-view/components/layers";
 
 const Container = styled.div`
   height: 100%;
@@ -181,9 +179,36 @@ const Center = styled.div`
   flex: 1;
   height: 100%;
   display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgba(0, 0, 0, 0.1);
+  gap: 40px;
+`;
+
+const CenterTabs = styled.div`
+  width: 100%;
+  height: 50px;
+  background-color: white;
+  display: flex;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+`;
+
+const CenterTab = styled.div`
+  width: 50%;
+  height: 100%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  background-color: white;
+  &.selected {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: black;
+  }
 `;
 
 const bgItems: TBackgroundItem[] = [
@@ -209,6 +234,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const [currentMode, setCurrentMode] = useState<"canvas" | "code">("canvas");
   const [isOpenCodeGenModal, setOpenCodeGenModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>("");
   const { get: getCB, write: writeCB } = useClipboard();
@@ -308,6 +334,7 @@ const SetupPage = () => {
       const textItem: Element = {
         id: "element_1",
         coords,
+        isShow: true,
         relativeCoords,
         style: {
           color: "#ffffff",
@@ -316,6 +343,7 @@ const SetupPage = () => {
           opacity: 1,
           transform: "rotate(0deg)",
         },
+        order: 1,
         details: {
           text: "New Text",
           type: ELEMENT_TYPES.TEXT,
@@ -337,6 +365,8 @@ const SetupPage = () => {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
         relativeCoords,
+        isShow: true,
+        order: lastEleNo ? lastEleNo + 1 : 1,
         style: {
           color: "#ffffff",
           fontSize: "20px",
@@ -396,6 +426,7 @@ const SetupPage = () => {
       const imageItem: Element = {
         id: `element_1`,
         coords,
+        isShow: true,
         relativeCoords,
         style: {
           width: "100px",
@@ -403,6 +434,7 @@ const SetupPage = () => {
           borderRadius: "0px",
           transform: "rotate(0deg)",
         },
+        order: 1,
         details: {
           url: "",
           type: ELEMENT_TYPES.IMAGE,
@@ -423,7 +455,9 @@ const SetupPage = () => {
       const imageItem: Element = {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
+        order: lastEleNo ? lastEleNo + 1 : 1,
         relativeCoords,
+        isShow: true,
         style: {
           width: "100px",
           height: "100px",
@@ -474,7 +508,9 @@ const SetupPage = () => {
       const squareItem: Element = {
         id: `element_1`,
         coords,
+        isShow: true,
         relativeCoords,
+        order: 1,
         style: {
           width: "100px",
           height: "100px",
@@ -501,7 +537,9 @@ const SetupPage = () => {
       const squareItem: Element = {
         id: lastEleNo ? `element_${lastEleNo + 1}` : "element_1",
         coords,
+        isShow: true,
         relativeCoords,
+        order: lastEleNo ? lastEleNo + 1 : 1,
         style: {
           width: "100px",
           height: "100px",
@@ -688,6 +726,7 @@ const SetupPage = () => {
         updatedOverlayMetaHistories[updatedOverlayMetaHistories.length - 1]
           .lastEleNo;
       const pastedElement = structuredClone(copiedElement);
+      pastedElement.order = lastEleNo ? lastEleNo + 1 : 1;
       pastedElement.id = lastEleNo ? `element_${lastEleNo + 1}` : `element_1`;
       pastedElement.relativeCoords = { x: relaviteCoord.x, y: relaviteCoord.y };
       pastedElement.coords = { x: coord.x, y: coord.y };
@@ -983,8 +1022,10 @@ const SetupPage = () => {
     text += "\n";
     text += `const MyComponent = () => { \n\treturn (\n\t  <Container>${generateRenderChildElementsCode()}\t  </Container>\n\t) \n}\n\n`;
     text += `export default MyComponent;`;
-    console.log(text);
     setGeneratedCode(text);
+    setTimeout(() => {
+      setCurrentMode("code");
+    }, 500);
   };
 
   function stopEvent(event: any) {
@@ -1129,6 +1170,65 @@ const SetupPage = () => {
     }
   }, [pressedKies]);
 
+  const updateElementState = (state: number, elementId: string) => {
+    const updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+    const eleIndex = updatedOverlayMetaHistories[
+      currentHistoryIndex
+    ].elements.findIndex((ele) => ele.id === elementId);
+    if (eleIndex === -1) return;
+    updatedOverlayMetaHistories[currentHistoryIndex].elements[eleIndex].isShow =
+      state === 0 ? false : true;
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
+  };
+
+  const reorderElement = (elementId: string, type: "up" | "down") => {
+    const updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
+    const eleIndex = updatedOverlayMetaHistories[
+      currentHistoryIndex
+    ].elements.findIndex((ele) => ele.id === elementId);
+    if (eleIndex === -1) return;
+    if (type === "up") {
+      if (
+        eleIndex <
+        updatedOverlayMetaHistories[currentHistoryIndex].elements.length - 1
+      ) {
+        const temp = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex].elements[
+            eleIndex + 1
+          ]
+        );
+        temp.order -= 1;
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[
+          eleIndex + 1
+        ] = updatedOverlayMetaHistories[currentHistoryIndex].elements[eleIndex];
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[
+          eleIndex + 1
+        ].order += 1;
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[eleIndex] =
+          temp;
+      }
+    } else {
+      if (eleIndex > 0) {
+        const temp = structuredClone(
+          updatedOverlayMetaHistories[currentHistoryIndex].elements[
+            eleIndex - 1
+          ]
+        );
+        temp.order += 1;
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[
+          eleIndex - 1
+        ] = updatedOverlayMetaHistories[currentHistoryIndex].elements[eleIndex];
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[
+          eleIndex - 1
+        ].order -= 1;
+        updatedOverlayMetaHistories[currentHistoryIndex].elements[eleIndex] =
+          temp;
+      }
+    }
+
+    setOverlayMetaHistories(updatedOverlayMetaHistories);
+  };
+
   return (
     <Container>
       <Header>
@@ -1191,7 +1291,7 @@ const SetupPage = () => {
         <HeaderRight>
           {/* <button onClick={downloadLayout}>Tải layout</button> */}
           <button onClick={generateCode}>Generate Code</button>
-          <button onClick={applyLayout}>Áp dụng layout</button>
+          {/* <button onClick={applyLayout}>Áp dụng layout</button> */}
         </HeaderRight>
       </Header>
       <Body>
@@ -1201,55 +1301,102 @@ const SetupPage = () => {
               onClick={() => setCurrentTab(0)}
               className={currentTab === 0 ? "selected" : ""}
             >
-              Nền
+              Background
             </Tab>
             <Tab
               onClick={() => setCurrentTab(1)}
               className={currentTab === 1 ? "selected" : ""}
             >
-              Thành phần
+              Item
             </Tab>
-            <Tab
+            {/* <Tab
               onClick={() => setCurrentTab(2)}
               className={currentTab === 2 ? "selected" : ""}
             >
-              Donate
-            </Tab>
+              Layers
+            </Tab> */}
           </Tabs>
           {currentTab === 0 && renderBackgrounds()}
           {currentTab === 1 && renderElements()}
+          {currentTab === 2 && (
+            <Layers
+              updateElementState={updateElementState}
+              reorderElement={reorderElement}
+              selectedElementId={selectedElementId}
+              setSelectedElementId={setSelectedElementId}
+              elements={overlayMetaHistories[currentHistoryIndex].elements}
+            />
+          )}
         </LeftPanel>
         <Center>
-          {overlayMetaHistories[currentHistoryIndex] && (
-            <OverlayView
-              setCopyType={setCopyType}
-              inSelectZoneIds={inSelectZoneIds}
-              setInSelectZoneIds={(ids) => {
-                setSelectedElementId(null);
-                setInSelectZoneIds(ids);
+          <CenterTabs>
+            <CenterTab
+              onClick={() => setCurrentMode("canvas")}
+              className={currentMode === "canvas" ? "selected" : ""}
+            >
+              Canvas
+            </CenterTab>
+            <CenterTab
+              onClick={() => {
+                generateCode();
               }}
-              currentCursorToolOption={currentCursorToolOption}
-              copiedElement={copiedElement}
-              copiedElements={copiedElements}
-              key={currentHistoryIndex}
-              updateElementSize={updateElementSize}
-              exportContainerRef={exportContainerRef}
-              selectElement={handleSelectElement}
-              removeElement={removeElement}
-              copyElement={copyElement}
-              pasteElement={pasteElement}
-              pasteMultipleElements={pasteMultipleElements}
-              updateElementCoords={updateElementCoords}
-              addText={(coords, relativeCoords) =>
-                addText(coords, relativeCoords)
-              }
-              addImage={(coords, relativeCoords) =>
-                addImage(coords, relativeCoords)
-              }
-              addSquare={(coords, relativeCoords) =>
-                addSquare(coords, relativeCoords)
-              }
-              overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
+              className={currentMode === "code" ? "selected" : ""}
+            >
+              Code
+            </CenterTab>
+          </CenterTabs>
+          {overlayMetaHistories[currentHistoryIndex] &&
+            currentMode === "canvas" && (
+              <OverlayView
+                selectedEleId={selectedElementId}
+                setSelectedEleId={setSelectedElementId}
+                setCopyType={setCopyType}
+                inSelectZoneIds={inSelectZoneIds}
+                setInSelectZoneIds={(ids) => {
+                  setSelectedElementId(null);
+                  setInSelectZoneIds(ids);
+                }}
+                currentCursorToolOption={currentCursorToolOption}
+                copiedElement={copiedElement}
+                copiedElements={copiedElements}
+                key={currentHistoryIndex}
+                updateElementSize={updateElementSize}
+                exportContainerRef={exportContainerRef}
+                selectElement={handleSelectElement}
+                removeElement={removeElement}
+                copyElement={copyElement}
+                pasteElement={pasteElement}
+                pasteMultipleElements={pasteMultipleElements}
+                updateElementCoords={updateElementCoords}
+                addText={(coords, relativeCoords) =>
+                  addText(coords, relativeCoords)
+                }
+                addImage={(coords, relativeCoords) =>
+                  addImage(coords, relativeCoords)
+                }
+                addSquare={(coords, relativeCoords) =>
+                  addSquare(coords, relativeCoords)
+                }
+                overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
+              />
+            )}
+          {currentMode === "code" && generatedCode && (
+            <CodeEditor
+              value={generatedCode ?? ""}
+              language="js"
+              data-color-mode="dark"
+              onChange={(e) => {}}
+              style={{
+                position: "relative",
+                width: "100%",
+                marginTop: "-40px",
+                overflowY: "hidden",
+                backgroundColor: "black",
+                boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
+                padding: "10px 10px",
+                fontFamily:
+                  "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+              }}
             />
           )}
         </Center>
@@ -1260,28 +1407,6 @@ const SetupPage = () => {
           />
         </Right>
       </Body>
-      {isOpenCodeGenModal && (
-        <CodeEditor
-          value={generatedCode ?? ""}
-          language="js"
-          data-color-mode="dark"
-          onChange={(e) => {}}
-          style={{
-            position: "fixed",
-            top: "2.5%",
-            left: "10%",
-            width: "80%",
-            height: "95%",
-            overflowY: "scroll",
-            backgroundColor: "black",
-            zIndex: 100,
-            boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
-            padding: "10px 10px",
-            fontFamily:
-              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
-          }}
-        />
-      )}
     </Container>
   );
 };

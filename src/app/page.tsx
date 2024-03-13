@@ -2,6 +2,7 @@
 import OBSWebSocket from "obs-websocket-js";
 import { useEffect, useRef, useState } from "react";
 import { BrowserInputSettings } from "./types/obs.types";
+import GitHubOAuth from "@/components/github-auth";
 
 export default function Home() {
   const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
@@ -69,8 +70,6 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      {isConnected && <button onClick={test}>Add Scene</button>}
-    </main>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24"></main>
   );
 }

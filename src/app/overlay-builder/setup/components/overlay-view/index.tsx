@@ -133,6 +133,8 @@ type Props = {
   inSelectZoneIds: string[];
   setInSelectZoneIds: (ids: string[]) => void;
   setCopyType: (type: "copy" | "cut") => void;
+  selectedEleId: string | null;
+  setSelectedEleId: (elementId: string) => void;
 };
 
 const OverlayView: React.FC<Props> = ({
@@ -154,6 +156,8 @@ const OverlayView: React.FC<Props> = ({
   inSelectZoneIds,
   setInSelectZoneIds,
   setCopyType,
+  selectedEleId,
+  setSelectedEleId,
 }) => {
   const topLineRef = useRef<HTMLDivElement>(null);
   const leftLineRef = useRef<HTMLDivElement>(null);
@@ -161,7 +165,6 @@ const OverlayView: React.FC<Props> = ({
   const bottomLineRef = useRef<HTMLDivElement>(null);
   const centerLineRef = useRef<HTMLDivElement>(null);
   const middleLineRef = useRef<HTMLDivElement>(null);
-  const [selectedEleId, setSelectedEleId] = useState("");
   const [isOpenContextMenu, setOpenContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const { background_ratio, background_url } = overlayMetadata;
@@ -286,7 +289,7 @@ const OverlayView: React.FC<Props> = ({
         rightLineRef?.current &&
         isDraggingElement
       ) {
-        if (selectedEleId !== "") {
+        if (selectedEleId && selectedEleId !== "") {
           const element = document.getElementById(selectedEleId);
           if (!element) return;
           const offset = 10;
@@ -385,6 +388,7 @@ const OverlayView: React.FC<Props> = ({
   ]);
 
   const cutElement = () => {
+    if (!selectedEleId || selectedEleId === "") return;
     setSelectedEleId("");
     setContextMenuPos({ x: 0, y: 0 });
     setOpenContextMenu(false);
@@ -451,7 +455,7 @@ const OverlayView: React.FC<Props> = ({
         <MiddleLine style={{ opacity: isMiddle ? 1 : 0 }} ref={middleLineRef} />
         {overlayMetadata.elements.map((element, i) => (
           <OverlayElement
-            selectedEleId={selectedEleId}
+            selectedEleId={selectedEleId ?? ""}
             currentCursorToolOption={currentCursorToolOption}
             closeContextMenu={() => {
               setOpenContextMenu(false);
@@ -498,7 +502,7 @@ const OverlayView: React.FC<Props> = ({
 
       {isOpenContextMenu && (
         <ElementContextMenu
-          selectEleId={selectedEleId}
+          selectEleId={selectedEleId ?? ""}
           copiedElement={copiedElement}
           copiedElements={copiedElements}
           pasteElement={(coord) => {
@@ -532,6 +536,7 @@ const OverlayView: React.FC<Props> = ({
           }}
           pasteMultipleElements={(coord) => pasteMultipleElements(coord)}
           copyElement={() => {
+            if (!selectedEleId || selectedEleId === "") return;
             setSelectedEleId("");
             setContextMenuPos({ x: 0, y: 0 });
             setOpenContextMenu(false);
@@ -540,6 +545,7 @@ const OverlayView: React.FC<Props> = ({
           }}
           cutElement={cutElement}
           deleteElement={() => {
+            if (!selectedEleId || selectedEleId === "") return;
             removeElement(selectedEleId);
           }}
           key={selectedEleId}

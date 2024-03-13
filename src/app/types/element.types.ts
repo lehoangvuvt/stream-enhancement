@@ -30,5 +30,8 @@ export type Element = {
   coords: XYCoord | null;
   relativeCoords: XYCoord | null;
   style: React.CSSProperties;
+  children?: Element[];
+  order: number;
+  isShow: boolean;
   details: TextElement | ImageElement | SquareElement;
 };
