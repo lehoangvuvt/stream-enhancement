@@ -1290,7 +1290,7 @@ const SetupPage = () => {
         </HeaderCenter>
         <HeaderRight>
           {/* <button onClick={downloadLayout}>Tải layout</button> */}
-          <button onClick={generateCode}>Generate Code</button>
+          {/* <button onClick={generateCode}>Generate Code</button> */}
           {/* <button onClick={applyLayout}>Áp dụng layout</button> */}
         </HeaderRight>
       </Header>
