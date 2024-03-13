@@ -1074,6 +1074,7 @@ const SetupPage = () => {
         console.error(error);
       }
     };
+    if (currentMode !== "canvas") return;
     if (pressedKies.length > 0) {
       if (pressedKies.length === 1) {
         if (
@@ -1168,7 +1169,7 @@ const SetupPage = () => {
         }
       }
     }
-  }, [pressedKies]);
+  }, [pressedKies, currentMode]);
 
   const updateElementState = (state: number, elementId: string) => {
     const updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
