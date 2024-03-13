@@ -1024,6 +1024,7 @@ const SetupPage = () => {
     text += `export default MyComponent;`;
     setGeneratedCode(text);
     setTimeout(() => {
+      setSelectedElementId(null);
       setCurrentMode("code");
     }, 500);
   };
@@ -1073,7 +1074,6 @@ const SetupPage = () => {
         console.error(error);
       }
     };
-    if (isOpenCodeGenModal) return;
     if (pressedKies.length > 0) {
       if (pressedKies.length === 1) {
         if (
