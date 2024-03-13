@@ -1385,6 +1385,7 @@ const SetupPage = () => {
             <CodeEditor
               value={generatedCode ?? ""}
               language="js"
+              disabled
               data-color-mode="dark"
               onChange={(e) => {}}
               style={{
