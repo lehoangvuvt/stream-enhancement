@@ -204,9 +204,9 @@ const CenterTab = styled.div`
   cursor: pointer;
   font-weight: 600;
   font-size: 15px;
-  background-color: white;
+  background-color: rgba(0, 0, 0, 0.1);
   &.selected {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: white;
     color: black;
   }
 `;
@@ -436,7 +436,7 @@ const SetupPage = () => {
         },
         order: 1,
         details: {
-          url: "",
+          url: "https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720",
           type: ELEMENT_TYPES.IMAGE,
         },
       };
@@ -465,7 +465,7 @@ const SetupPage = () => {
           transform: "rotate(0deg)",
         },
         details: {
-          url: "",
+          url: "https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720",
           type: ELEMENT_TYPES.IMAGE,
         },
       };
@@ -967,7 +967,17 @@ const SetupPage = () => {
       const eleId =
         ele.id.substring(0, 1).toUpperCase() +
         ele.id.substring(1, ele.id.length);
-      text += `\t     <${eleId.replace("_", "")} /> \n`;
+      if (ele.details.type === ELEMENT_TYPES.TEXT) {
+        text += `\t     <${eleId.replace("_", "")}>${
+          ele.details.text
+        }</${eleId.replace("_", "")}> \n`;
+      } else if (ele.details.type === ELEMENT_TYPES.IMAGE) {
+        text += `\t     <${eleId.replace("_", "")} src="${
+          ele.details.url
+        }"/> \n`;
+      } else {
+        text += `\t     <${eleId.replace("_", "")} /> \n`;
+      }
     });
     return text;
   };
@@ -991,7 +1001,22 @@ const SetupPage = () => {
       const eleId =
         ele.id.substring(0, 1).toUpperCase() +
         ele.id.substring(1, ele.id.length);
-      let styleText = `const ${eleId.replace("_", "")} = styled.div${"`"}\n`;
+      let componentType = "";
+      switch (ele.details.type) {
+        case ELEMENT_TYPES.IMAGE:
+          componentType = "styled.img";
+          break;
+        case ELEMENT_TYPES.SQUARE:
+          componentType = "styled.div";
+          break;
+        case ELEMENT_TYPES.TEXT:
+          componentType = "styled.h1";
+          break;
+      }
+      let styleText = `const ${eleId.replace(
+        "_",
+        ""
+      )} = ${componentType}${"`"}\n`;
       styleText += `\tposition: absolute;\n`;
       styleText += `\tleft: ${
         ele.relativeCoords?.x
@@ -1026,7 +1051,7 @@ const SetupPage = () => {
     setTimeout(() => {
       setSelectedElementId(null);
       setCurrentMode("code");
-    }, 500);
+    }, 50);
   };
 
   function stopEvent(event: any) {
@@ -1382,24 +1407,34 @@ const SetupPage = () => {
               />
             )}
           {currentMode === "code" && generatedCode && (
-            <CodeEditor
-              value={generatedCode ?? ""}
-              language="js"
-              disabled
-              data-color-mode="dark"
-              onChange={(e) => {}}
+            <div
               style={{
-                position: "relative",
                 width: "100%",
-                marginTop: "-40px",
-                overflowY: "hidden",
-                backgroundColor: "black",
-                boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
-                padding: "10px 10px",
-                fontFamily:
-                  "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+                height: "550px",
+                display: "flex",
+                justifyContent: "center",
               }}
-            />
+            >
+              <CodeEditor
+                value={generatedCode ?? ""}
+                language="js"
+                disabled
+                data-color-mode="dark"
+                onChange={(e) => {}}
+                style={{
+                  position: "relative",
+                  width: "90%",
+                  height: "100%",
+                  marginTop: "0px",
+                  overflowY: "auto",
+                  backgroundColor: "black",
+                  boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
+                  padding: "10px 10px",
+                  fontFamily:
+                    "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+                }}
+              />
+            </div>
           )}
         </Center>
         <Right>

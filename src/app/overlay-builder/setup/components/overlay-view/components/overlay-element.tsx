@@ -212,11 +212,7 @@ const OverlayElement: React.FC<Props> = ({
             height={parseInt(
               elementItem.style.height.toString().replace("px", "")
             )}
-            src={
-              elementItem.details.url?.length > 0
-                ? elementItem.details.url
-                : "https://cc-prod.scene7.com/is/image/CCProdAuthor/What-is-Stock-Photography_P1_mobile?$pjpeg$&jpegSize=200&wid=720"
-            }
+            src={elementItem.details.url}
             alt="image-item"
           />
         );
