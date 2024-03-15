@@ -2,7 +2,6 @@
 import OBSWebSocket from "obs-websocket-js";
 import { useEffect, useRef, useState } from "react";
 import { BrowserInputSettings } from "./types/obs.types";
-import GitHubOAuth from "@/components/github-auth";
 
 export default function Home() {
   const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
