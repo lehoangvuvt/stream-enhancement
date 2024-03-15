@@ -62,6 +62,7 @@ type Props = {
   decrement: (step: number) => void;
   increment: (step: number) => void;
   onChange: (value: number) => void;
+  onMouseRelease?: () => void;
 };
 
 const HScrollInput: React.FC<Props> = ({
@@ -71,6 +72,7 @@ const HScrollInput: React.FC<Props> = ({
   decrement,
   increment,
   onChange,
+  onMouseRelease,
 }) => {
   const { setCursor } = useCursor();
   const [isFocus, setFocus] = useState(false);
@@ -88,7 +90,8 @@ const HScrollInput: React.FC<Props> = ({
   const handleMouseUp = useCallback(() => {
     setHoldLMB(false);
     setCenterCoords(null);
-  }, []);
+    onMouseRelease && onMouseRelease();
+  }, [onMouseRelease]);
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {

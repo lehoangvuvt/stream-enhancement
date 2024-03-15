@@ -178,7 +178,7 @@ const OverlayElement: React.FC<Props> = ({
   const [isDoubleClick, setDoubleClick] = useState(false);
   const [mousePress, setMousePress] = useState(false);
   const [resizeDirection, setResizeDirection] =
-    useState<ResizeDirection | null>(null);
+    useState<ResizeDirection | null>(null); 
 
   const renderElementByType = () => {
     let element: React.ReactNode = null;
