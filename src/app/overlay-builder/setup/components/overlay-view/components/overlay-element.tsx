@@ -178,7 +178,7 @@ const OverlayElement: React.FC<Props> = ({
   const [isDoubleClick, setDoubleClick] = useState(false);
   const [mousePress, setMousePress] = useState(false);
   const [resizeDirection, setResizeDirection] =
-    useState<ResizeDirection | null>(null); 
+    useState<ResizeDirection | null>(null);
 
   const renderElementByType = () => {
     let element: React.ReactNode = null;
@@ -363,10 +363,10 @@ const OverlayElement: React.FC<Props> = ({
           let height = parseInt(
             elementItem.style.height.toString().replace("px", "")
           );
+          let newX = 0;
+          let newY = 0;
           switch (resizeDirection) {
             case "left":
-              let newX = 0;
-              let newY = 0;
               if (e.pageX < containerRef.current.getBoundingClientRect().left) {
                 const addedWidth =
                   containerRef.current.getBoundingClientRect().left - e.pageX;
@@ -380,6 +380,26 @@ const OverlayElement: React.FC<Props> = ({
               } else {
                 width -=
                   e.pageX - containerRef.current.getBoundingClientRect().left;
+              }
+              updateCoords({ x: newX, y: newY }, elementItem.id);
+              updateElementSize && updateElementSize({ width, height });
+              break;
+            case "right":
+              if (
+                e.pageX > containerRef.current.getBoundingClientRect().right
+              ) {
+                const addedWidth =
+                  e.pageX - containerRef.current.getBoundingClientRect().right;
+                width += addedWidth;
+                if (elementItem.coords) {
+                  newX = containerRef.current.getBoundingClientRect().right;
+                  containerRef.current.getBoundingClientRect().right -
+                    addedWidth;
+                  newY = elementItem.coords.y;
+                }
+              } else {
+                width -=
+                  containerRef.current.getBoundingClientRect().right - e.pageX;
               }
               updateCoords({ x: newX, y: newY }, elementItem.id);
               updateElementSize && updateElementSize({ width, height });
@@ -540,7 +560,12 @@ const OverlayElement: React.FC<Props> = ({
             }}
           />
           <BorderTopRight />
-          <BorderRight />
+          <BorderRight
+            onMouseDown={(e) => {
+              setResizeDirection("right");
+              setMousePress(true);
+            }}
+          />
           <BorderBottomRight />
           <BorderBottom />
           <BorderBottomLeft />

@@ -15,14 +15,13 @@ import {
   Element,
 } from "@/app/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
-import OBSWebSocket from "obs-websocket-js";
-import { BrowserInputSettings } from "@/app/types/obs.types";
 // import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
 import useKeyboard from "@/hooks/useKeyboard";
 import useClipboard from "@/hooks/useClipboard";
 import SquareItem from "./components/elements/square-item";
 import Layers from "./components/overlay-view/components/layers";
+import { useSearchParams } from "next/navigation";
 
 const Container = styled.div`
   height: 100%;
@@ -234,6 +233,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const searchParams = useSearchParams();
   const [currentMode, setCurrentMode] = useState<"canvas" | "code">("canvas");
   const [isOpenCodeGenModal, setOpenCodeGenModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>("");
@@ -241,7 +241,6 @@ const SetupPage = () => {
   const { pressedKies, setPressedKies } = useKeyboard();
   const [copyType, setCopyType] = useState<"copy" | "cut">("copy");
   const exportContainerRef = useRef<any>(null);
-  const obsRef = useRef<OBSWebSocket>(new OBSWebSocket());
   const [currentCursorToolOption, setCurrentCursorToolOpt] =
     useState<CURSOR_TOOL_OPTIONS>(CURSOR_TOOL_OPTIONS.DEFAULT);
   const [isConnected, setConnected] = useState(false);
@@ -263,6 +262,17 @@ const SetupPage = () => {
     null
   );
   const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (searchParams.get("id")) {
+      const a = localStorage.getItem("layouts");
+      if (a) {
+        const b = JSON.parse(a) as OverlayMetadata[];
+        const overlayMD = b[Number(searchParams.get("id"))];
+        setOverlayMetaHistories([overlayMD]);
+      }
+    }
+  }, [searchParams]);
 
   const setBackground = (item: TBackgroundItem) => {
     let updatedOverlayMetaHistories = structuredClone(overlayMetaHistories);
@@ -891,68 +901,6 @@ const SetupPage = () => {
     };
   }, []);
 
-  const test = async () => {
-    if (!obsRef || !obsRef.current) return;
-    const { currentProgramSceneName } = await obsRef.current.call(
-      "GetCurrentProgramScene"
-    );
-
-    const { inputs } = await obsRef.current.call("GetInputList");
-    console.log(inputs);
-    if (!inputs.find((input) => input.inputName === "layout")) {
-      const inputSettings: BrowserInputSettings = {
-        height: 1080,
-        width: 1920,
-        css: "body { background-color:red; margin: 0px auto; overflow: hidden; }",
-        url: "http://www.localhost:3000/iframe",
-      };
-      await obsRef.current.callBatch([
-        {
-          requestType: "CreateInput",
-          requestData: {
-            inputKind: "browser_source",
-            inputName: "layout",
-            inputSettings,
-            sceneName: currentProgramSceneName,
-          },
-        },
-        // {
-        //   requestType: "CreateInput",
-        //   requestData: {
-        //     inputKind: "browser_source",
-        //     inputName: "donation",
-        //     inputSettings: {
-        //       height: 1080,
-        //       width: 1920,
-        //       css: "body { background-color:rgba(0,0,0,0); margin: 0px auto; overflow: hidden; }",
-        //       url: "http://www.localhost:3000/donation",
-        //     },
-        //     sceneName: currentProgramSceneName,
-        //   },
-        // },
-      ]);
-    } else {
-      const inputSettings: BrowserInputSettings = {
-        height: 1080,
-        width: 1920,
-        css: "body { background-color:red; margin: 0px auto; overflow: hidden; }",
-        url: "http://www.localhost:3000/iframe?ref=1",
-      };
-      await obsRef.current.call("SetInputSettings", {
-        inputName: "layout",
-        inputSettings,
-      });
-    }
-  };
-
-  const applyLayout = () => {
-    localStorage.setItem(
-      "layout",
-      JSON.stringify(overlayMetaHistories[currentHistoryIndex])
-    );
-    test();
-  };
-
   const downloadLayout = async () => {
     if (exportContainerRef && exportContainerRef.current) {
       // exportComponentAsJPEG(exportContainerRef, {
@@ -1255,6 +1203,20 @@ const SetupPage = () => {
     setOverlayMetaHistories(updatedOverlayMetaHistories);
   };
 
+  const save = () => {
+    const layout = overlayMetaHistories[currentHistoryIndex];
+    if (localStorage.getItem("layouts")) {
+      const a = localStorage.getItem("layouts");
+      if (a !== null) {
+        const b = JSON.parse(a) as OverlayMetadata[];
+        b.push(layout);
+        localStorage.setItem("layouts", JSON.stringify(b));
+      }
+    } else {
+      localStorage.setItem("layouts", JSON.stringify([layout]));
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -1317,7 +1279,7 @@ const SetupPage = () => {
         <HeaderRight>
           {/* <button onClick={downloadLayout}>Tải layout</button> */}
           {/* <button onClick={generateCode}>Generate Code</button> */}
-          {/* <button onClick={applyLayout}>Áp dụng layout</button> */}
+          <button onClick={save}>Save layout</button>
         </HeaderRight>
       </Header>
       <Body>
