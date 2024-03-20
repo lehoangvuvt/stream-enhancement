@@ -30,9 +30,9 @@ const LayoutInfo = styled.div`
   flex-flow: column;
   gap: 5px;
   div {
-    font-size: 17px;s
+    font-size: 17px;
     &:nth-child(1) {
-      color: #fff;
+      color: #ffffff;
       font-weight: 700;
     }
     &:nth-child(2) {
