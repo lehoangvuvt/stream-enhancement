@@ -21,7 +21,7 @@ const Input = styled.input`
   padding: 10px 15px;
   box-sizing: border-box;
   color: white;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   &::placeholder {
     font-weight: 600;
@@ -33,9 +33,15 @@ type Props = {
   value: string;
   placeholder?: string;
   onChange: (value: string) => void;
+  onClear: () => void;
 };
 
-const SearchBar: React.FC<Props> = ({ value, placeholder, onChange }) => {
+const SearchBar: React.FC<Props> = ({
+  value,
+  placeholder,
+  onChange,
+  onClear,
+}) => {
   return (
     <Container>
       <Input
@@ -47,7 +53,7 @@ const SearchBar: React.FC<Props> = ({ value, placeholder, onChange }) => {
       {value?.length > 0 && (
         <button
           type="button"
-          onClick={() => onChange("")}
+          onClick={onClear}
           style={{
             width: "45px",
             height: "100%",

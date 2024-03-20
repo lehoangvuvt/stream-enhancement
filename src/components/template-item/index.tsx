@@ -52,7 +52,6 @@ const LayoutInfo = styled.div`
       div {
         font-size: 12px;
         color: white;
-        background-color: rgba(255, 255, 255, 0.2);
         padding: 5px;
         white-space: nowrap;
       }
