@@ -105,7 +105,7 @@ export default function Home() {
                   fontSize: "17px",
                 }}
               >
-                You haven't created any layouts yet. Click&nbsp;
+                {`You haven't created any layouts yet. Click`}&nbsp;
                 <span
                   onClick={() => router.push("/overlay-builder/setup")}
                   style={{ cursor: "pointer", textDecoration: "underline" }}
