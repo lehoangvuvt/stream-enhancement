@@ -1,16 +1,15 @@
-import { OverlayMetadata } from "@/app/overlay-builder/setup/page";
 import React from "react";
 import styled from "styled-components";
 import OverlayViewRO from "../overlay-view-ro";
+import { Layout } from "@/app/types/element.types";
 
 type Props = {
-  overlayMetadata: OverlayMetadata;
+  layout: Layout;
   width: string;
   onClick: () => void;
 };
 
 const Container = styled.div`
-  aspect-ratio: 16/9;
   display: flex;
   flex-flow: column;
   background-color: rgba(0, 0, 0, 0, 0.1);
@@ -19,15 +18,40 @@ const Container = styled.div`
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  gap: 10px;
   &:hover {
     transform: translate(2.5px, -2.5px);
   }
 `;
 
-const TemplateItem: React.FC<Props> = ({ overlayMetadata, width, onClick }) => {
+const LayoutInfo = styled.div`
+  width: 100%;
+  display: flex;
+  flex-flow: column;
+  gap: 5px;
+  div {
+    font-size: 17px;s
+    &:nth-child(1) {
+      color: #fff;
+      font-weight: 700;
+    }
+    &:nth-child(2) {
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+`;
+
+const TemplateItem: React.FC<Props> = ({ layout, width, onClick }) => {
   return (
     <Container onClick={onClick} style={{ width: width }}>
-      <OverlayViewRO overlayMetadata={overlayMetadata} />
+      <div style={{ width: "100%", aspectRatio: 16 / 9 }}>
+        <OverlayViewRO overlayMetadata={layout.overlayMetadata} />
+      </div>
+      <LayoutInfo style={{ width: "100%" }}>
+        <div>{layout.title}</div>
+        <div>{layout.authorName}</div>
+      </LayoutInfo>
     </Container>
   );
 };

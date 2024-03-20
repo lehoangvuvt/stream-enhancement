@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
 import { OverlayMetadata } from "./overlay-builder/setup/page";
 import { useRouter } from "next/navigation";
+import { Layout } from "./types/element.types";
 
 const Container = styled.div`
   background-color: #131417;
@@ -15,8 +16,8 @@ const Container = styled.div`
   top: 0;
   left: 0;
   display: flex;
-  padding: 0px 15px;
   box-sizing: border-box;
+  gap: 20px;
 `;
 
 const Header = styled.div`
@@ -37,6 +38,8 @@ const TemplatesList = styled.div`
 
 const Left = styled.div`
   width: 15%;
+  background-color: #1e1f26;
+  box-sizing: border-box;
 `;
 
 const Right = styled.div`
@@ -48,7 +51,7 @@ const Right = styled.div`
 export default function Home() {
   const [searchTxt, setSearchTxt] = useState("");
   const [isLoading, setLoading] = useState(true);
-  const [layouts, setLayouts] = useState<OverlayMetadata[]>([]);
+  const [layouts, setLayouts] = useState<Layout[]>([]);
   const router = useRouter();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -59,7 +62,7 @@ export default function Home() {
     if (localStorage.getItem("layouts")) {
       const a = localStorage.getItem("layouts");
       if (a !== null) {
-        const b = JSON.parse(a) as OverlayMetadata[];
+        const b = JSON.parse(a) as Layout[];
         setLayouts(b);
       }
     }
@@ -89,8 +92,8 @@ export default function Home() {
               layouts.map((layout, i) => (
                 <TemplateItem
                   onClick={() => handleOnSelectLayout(i)}
-                  overlayMetadata={layout}
-                  width="calc(100% / 4 - 4px)"
+                  layout={layout}
+                  width="calc(100% / 4 - 15px)"
                   key={i}
                 />
               ))

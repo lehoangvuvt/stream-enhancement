@@ -9,10 +9,12 @@ import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import CodeEditor from "@uiw/react-textarea-code-editor";
+import { Modal } from "antd";
 import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
+  Layout,
 } from "@/app/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
 // import { exportComponentAsJPEG } from "react-component-export-image";
@@ -22,6 +24,7 @@ import useClipboard from "@/hooks/useClipboard";
 import SquareItem from "./components/elements/square-item";
 import Layers from "./components/overlay-view/components/layers";
 import { useSearchParams } from "next/navigation";
+import SaveLayoutModal from "./components/save-layout-modal";
 
 const Container = styled.div`
   height: 100%;
@@ -236,6 +239,7 @@ const SetupPage = () => {
   const searchParams = useSearchParams();
   const [currentMode, setCurrentMode] = useState<"canvas" | "code">("canvas");
   const [isOpenCodeGenModal, setOpenCodeGenModal] = useState(false);
+  const [isOpenSaveModal, setOpenSaveModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>("");
   const { get: getCB, write: writeCB } = useClipboard();
   const { pressedKies, setPressedKies } = useKeyboard();
@@ -267,9 +271,9 @@ const SetupPage = () => {
     if (searchParams.get("id")) {
       const a = localStorage.getItem("layouts");
       if (a) {
-        const b = JSON.parse(a) as OverlayMetadata[];
-        const overlayMD = b[Number(searchParams.get("id"))];
-        setOverlayMetaHistories([overlayMD]);
+        const b = JSON.parse(a) as Layout[];
+        const layout = b[Number(searchParams.get("id"))];
+        setOverlayMetaHistories([layout.overlayMetadata]);
       }
     }
   }, [searchParams]);
@@ -1204,17 +1208,7 @@ const SetupPage = () => {
   };
 
   const save = () => {
-    const layout = overlayMetaHistories[currentHistoryIndex];
-    if (localStorage.getItem("layouts")) {
-      const a = localStorage.getItem("layouts");
-      if (a !== null) {
-        const b = JSON.parse(a) as OverlayMetadata[];
-        b.push(layout);
-        localStorage.setItem("layouts", JSON.stringify(b));
-      }
-    } else {
-      localStorage.setItem("layouts", JSON.stringify([layout]));
-    }
+    setOpenSaveModal(true);
   };
 
   return (
@@ -1406,6 +1400,18 @@ const SetupPage = () => {
           />
         </Right>
       </Body>
+      <Modal
+        title={null}
+        closeIcon={null}
+        open={isOpenSaveModal}
+        onOk={() => {}}
+        onCancel={() => setOpenSaveModal(false)}
+        footer={null}
+      >
+        <SaveLayoutModal
+          overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
+        />
+      </Modal>
     </Container>
   );
 };

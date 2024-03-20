@@ -1,4 +1,5 @@
 import { XYCoord } from "react-dnd";
+import { OverlayMetadata } from "../overlay-builder/setup/page";
 
 export enum ELEMENT_TYPES {
   TEXT = "TEXT",
@@ -34,4 +35,11 @@ export type Element = {
   order: number;
   isShow: boolean;
   details: TextElement | ImageElement | SquareElement;
+};
+
+export type Layout = {
+  overlayMetadata: OverlayMetadata;
+  authorName: string;
+  title: string;
+  tags: string[];
 };
