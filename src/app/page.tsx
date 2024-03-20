@@ -52,10 +52,22 @@ export default function Home() {
   const [searchTxt, setSearchTxt] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [layouts, setLayouts] = useState<Layout[]>([]);
+  const [searchedLayouts, setSearchedLayouts] = useState<Layout[]>([]);
   const router = useRouter();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (searchTxt.trim().length > 0) {
+      const result = layouts.filter(
+        (layout) =>
+          layout.authorName.toUpperCase().includes(searchTxt.toUpperCase()) ||
+          layout.title.toUpperCase().includes(searchTxt.toUpperCase()) ||
+          layout.tags.includes(searchTxt)
+      );
+      setSearchedLayouts(result);
+    } else {
+      setSearchedLayouts([...layouts]);
+    }
   };
 
   useEffect(() => {
@@ -64,6 +76,7 @@ export default function Home() {
       if (a !== null) {
         const b = JSON.parse(a) as Layout[];
         setLayouts(b);
+        setSearchedLayouts(b);
       }
     }
     setLoading(false);
@@ -88,12 +101,12 @@ export default function Home() {
         </Header>
         <TemplatesList>
           {!isLoading ? (
-            layouts?.length > 0 ? (
-              layouts.map((layout, i) => (
+            searchedLayouts?.length > 0 ? (
+              searchedLayouts.map((layout, i) => (
                 <TemplateItem
                   onClick={() => handleOnSelectLayout(i)}
                   layout={layout}
-                  width="calc(100% / 4 - 15px)"
+                  width="calc(100% / 4 - 20px)"
                   key={i}
                 />
               ))
@@ -108,14 +121,20 @@ export default function Home() {
                   fontSize: "17px",
                 }}
               >
-                {`You haven't created any layouts yet. Click`}&nbsp;
-                <span
-                  onClick={() => router.push("/overlay-builder/setup")}
-                  style={{ cursor: "pointer", textDecoration: "underline" }}
-                >
-                  here
-                </span>
-                &nbsp;to create one
+                {layouts?.length === 0 ? (
+                  <>
+                    {`You haven't created any layouts yet. Click`}&nbsp;
+                    <span
+                      onClick={() => router.push("/overlay-builder/setup")}
+                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                    >
+                      here
+                    </span>
+                    &nbsp;to create one
+                  </>
+                ) : (
+                  <>Not find any layouts</>
+                )}
               </div>
             )
           ) : (

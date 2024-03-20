@@ -18,9 +18,11 @@ const Container = styled.div`
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  gap: 10px;
+  gap: 15px;
+  padding: 10px 15px;
   &:hover {
     transform: translate(2.5px, -2.5px);
+    background-color: #252830;
   }
 `;
 
@@ -30,7 +32,7 @@ const LayoutInfo = styled.div`
   flex-flow: column;
   gap: 5px;
   div {
-    font-size: 17px;
+    font-size: 16px;
     &:nth-child(1) {
       color: #ffffff;
       font-weight: 700;
