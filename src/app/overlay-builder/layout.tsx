@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import styled from "styled-components";
@@ -21,7 +22,9 @@ export default function OverlayBuilderLayout({
 }) {
   return (
     <Container>
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+      <DndProvider backend={HTML5Backend}>
+        <Suspense>{children}</Suspense>
+      </DndProvider>
     </Container>
   );
 }

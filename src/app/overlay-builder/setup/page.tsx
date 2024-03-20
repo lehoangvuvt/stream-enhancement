@@ -1218,199 +1218,195 @@ const SetupPage = () => {
   };
 
   return (
-    <Suspense>
-      <Container>
-        <Header>
-          <HeaderLeft>
-            <button
-              className={currentHistoryIndex <= 0 ? "disabled" : ""}
-              onClick={() =>
-                currentHistoryIndex > 0 &&
-                setCurrentHistoryIndex((prevIndex) => prevIndex - 1)
+    <Container>
+      <Header>
+        <HeaderLeft>
+          <button
+            className={currentHistoryIndex <= 0 ? "disabled" : ""}
+            onClick={() =>
+              currentHistoryIndex > 0 &&
+              setCurrentHistoryIndex((prevIndex) => prevIndex - 1)
+            }
+          >
+            Undo
+          </button>
+          <button
+            className={
+              currentHistoryIndex >= overlayMetaHistories.length - 1
+                ? "disabled"
+                : ""
+            }
+            onClick={() =>
+              currentHistoryIndex < overlayMetaHistories.length - 1 &&
+              setCurrentHistoryIndex((prevIndex) => prevIndex + 1)
+            }
+          >
+            Redo
+          </button>
+        </HeaderLeft>
+        <HeaderCenter>
+          <div
+            onClick={() => {
+              if (currentCursorToolOption !== CURSOR_TOOL_OPTIONS.DEFAULT) {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
               }
+            }}
+            className={
+              currentCursorToolOption === CURSOR_TOOL_OPTIONS.DEFAULT
+                ? "selected"
+                : ""
+            }
+          >
+            <AdsClickIcon color="inherit" fontSize="inherit" />
+          </div>
+          <div
+            onClick={() => {
+              if (currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT) {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.ZONE_SELECT);
+              } else {
+                setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
+              }
+            }}
+            className={
+              currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
+                ? "selected"
+                : ""
+            }
+          >
+            <HighlightAltIcon color="inherit" fontSize="inherit" />
+          </div>
+        </HeaderCenter>
+        <HeaderRight>
+          {/* <button onClick={downloadLayout}>Tải layout</button> */}
+          {/* <button onClick={generateCode}>Generate Code</button> */}
+          <button onClick={save}>Save layout</button>
+        </HeaderRight>
+      </Header>
+      <Body>
+        <LeftPanel>
+          <Tabs>
+            <Tab
+              onClick={() => setCurrentTab(0)}
+              className={currentTab === 0 ? "selected" : ""}
             >
-              Undo
-            </button>
-            <button
-              className={
-                currentHistoryIndex >= overlayMetaHistories.length - 1
-                  ? "disabled"
-                  : ""
-              }
-              onClick={() =>
-                currentHistoryIndex < overlayMetaHistories.length - 1 &&
-                setCurrentHistoryIndex((prevIndex) => prevIndex + 1)
-              }
+              Background
+            </Tab>
+            <Tab
+              onClick={() => setCurrentTab(1)}
+              className={currentTab === 1 ? "selected" : ""}
             >
-              Redo
-            </button>
-          </HeaderLeft>
-          <HeaderCenter>
-            <div
-              onClick={() => {
-                if (currentCursorToolOption !== CURSOR_TOOL_OPTIONS.DEFAULT) {
-                  setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
-                }
-              }}
-              className={
-                currentCursorToolOption === CURSOR_TOOL_OPTIONS.DEFAULT
-                  ? "selected"
-                  : ""
-              }
-            >
-              <AdsClickIcon color="inherit" fontSize="inherit" />
-            </div>
-            <div
-              onClick={() => {
-                if (
-                  currentCursorToolOption !== CURSOR_TOOL_OPTIONS.ZONE_SELECT
-                ) {
-                  setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.ZONE_SELECT);
-                } else {
-                  setCurrentCursorToolOpt(CURSOR_TOOL_OPTIONS.DEFAULT);
-                }
-              }}
-              className={
-                currentCursorToolOption === CURSOR_TOOL_OPTIONS.ZONE_SELECT
-                  ? "selected"
-                  : ""
-              }
-            >
-              <HighlightAltIcon color="inherit" fontSize="inherit" />
-            </div>
-          </HeaderCenter>
-          <HeaderRight>
-            {/* <button onClick={downloadLayout}>Tải layout</button> */}
-            {/* <button onClick={generateCode}>Generate Code</button> */}
-            <button onClick={save}>Save layout</button>
-          </HeaderRight>
-        </Header>
-        <Body>
-          <LeftPanel>
-            <Tabs>
-              <Tab
-                onClick={() => setCurrentTab(0)}
-                className={currentTab === 0 ? "selected" : ""}
-              >
-                Background
-              </Tab>
-              <Tab
-                onClick={() => setCurrentTab(1)}
-                className={currentTab === 1 ? "selected" : ""}
-              >
-                Item
-              </Tab>
-              {/* <Tab
+              Item
+            </Tab>
+            {/* <Tab
               onClick={() => setCurrentTab(2)}
               className={currentTab === 2 ? "selected" : ""}
             >
               Layers
             </Tab> */}
-            </Tabs>
-            {currentTab === 0 && renderBackgrounds()}
-            {currentTab === 1 && renderElements()}
-            {currentTab === 2 && (
-              <Layers
-                updateElementState={updateElementState}
-                reorderElement={reorderElement}
-                selectedElementId={selectedElementId}
-                setSelectedElementId={setSelectedElementId}
-                elements={overlayMetaHistories[currentHistoryIndex].elements}
+          </Tabs>
+          {currentTab === 0 && renderBackgrounds()}
+          {currentTab === 1 && renderElements()}
+          {currentTab === 2 && (
+            <Layers
+              updateElementState={updateElementState}
+              reorderElement={reorderElement}
+              selectedElementId={selectedElementId}
+              setSelectedElementId={setSelectedElementId}
+              elements={overlayMetaHistories[currentHistoryIndex].elements}
+            />
+          )}
+        </LeftPanel>
+        <Center>
+          <CenterTabs>
+            <CenterTab
+              onClick={() => setCurrentMode("canvas")}
+              className={currentMode === "canvas" ? "selected" : ""}
+            >
+              Canvas
+            </CenterTab>
+            <CenterTab
+              onClick={() => {
+                generateCode();
+              }}
+              className={currentMode === "code" ? "selected" : ""}
+            >
+              Code
+            </CenterTab>
+          </CenterTabs>
+          {overlayMetaHistories[currentHistoryIndex] &&
+            currentMode === "canvas" && (
+              <OverlayView
+                selectedEleId={selectedElementId}
+                setSelectedEleId={setSelectedElementId}
+                setCopyType={setCopyType}
+                inSelectZoneIds={inSelectZoneIds}
+                setInSelectZoneIds={(ids) => {
+                  setSelectedElementId(null);
+                  setInSelectZoneIds(ids);
+                }}
+                currentCursorToolOption={currentCursorToolOption}
+                copiedElement={copiedElement}
+                copiedElements={copiedElements}
+                key={currentHistoryIndex}
+                updateElementSize={updateElementSize}
+                exportContainerRef={exportContainerRef}
+                selectElement={handleSelectElement}
+                removeElement={removeElement}
+                copyElement={copyElement}
+                pasteElement={pasteElement}
+                pasteMultipleElements={pasteMultipleElements}
+                updateElementCoords={updateElementCoords}
+                addText={(coords, relativeCoords) =>
+                  addText(coords, relativeCoords)
+                }
+                addImage={(coords, relativeCoords) =>
+                  addImage(coords, relativeCoords)
+                }
+                addSquare={(coords, relativeCoords) =>
+                  addSquare(coords, relativeCoords)
+                }
+                overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
               />
             )}
-          </LeftPanel>
-          <Center>
-            <CenterTabs>
-              <CenterTab
-                onClick={() => setCurrentMode("canvas")}
-                className={currentMode === "canvas" ? "selected" : ""}
-              >
-                Canvas
-              </CenterTab>
-              <CenterTab
-                onClick={() => {
-                  generateCode();
-                }}
-                className={currentMode === "code" ? "selected" : ""}
-              >
-                Code
-              </CenterTab>
-            </CenterTabs>
-            {overlayMetaHistories[currentHistoryIndex] &&
-              currentMode === "canvas" && (
-                <OverlayView
-                  selectedEleId={selectedElementId}
-                  setSelectedEleId={setSelectedElementId}
-                  setCopyType={setCopyType}
-                  inSelectZoneIds={inSelectZoneIds}
-                  setInSelectZoneIds={(ids) => {
-                    setSelectedElementId(null);
-                    setInSelectZoneIds(ids);
-                  }}
-                  currentCursorToolOption={currentCursorToolOption}
-                  copiedElement={copiedElement}
-                  copiedElements={copiedElements}
-                  key={currentHistoryIndex}
-                  updateElementSize={updateElementSize}
-                  exportContainerRef={exportContainerRef}
-                  selectElement={handleSelectElement}
-                  removeElement={removeElement}
-                  copyElement={copyElement}
-                  pasteElement={pasteElement}
-                  pasteMultipleElements={pasteMultipleElements}
-                  updateElementCoords={updateElementCoords}
-                  addText={(coords, relativeCoords) =>
-                    addText(coords, relativeCoords)
-                  }
-                  addImage={(coords, relativeCoords) =>
-                    addImage(coords, relativeCoords)
-                  }
-                  addSquare={(coords, relativeCoords) =>
-                    addSquare(coords, relativeCoords)
-                  }
-                  overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
-                />
-              )}
-            {currentMode === "code" && generatedCode && (
-              <div
+          {currentMode === "code" && generatedCode && (
+            <div
+              style={{
+                width: "100%",
+                height: "550px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <CodeEditor
+                value={generatedCode ?? ""}
+                language="js"
+                disabled
+                data-color-mode="dark"
+                onChange={(e) => {}}
                 style={{
-                  width: "100%",
-                  height: "550px",
-                  display: "flex",
-                  justifyContent: "center",
+                  position: "relative",
+                  width: "90%",
+                  height: "100%",
+                  marginTop: "0px",
+                  overflowY: "auto",
+                  backgroundColor: "black",
+                  boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
+                  padding: "10px 10px",
+                  fontFamily:
+                    "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
                 }}
-              >
-                <CodeEditor
-                  value={generatedCode ?? ""}
-                  language="js"
-                  disabled
-                  data-color-mode="dark"
-                  onChange={(e) => {}}
-                  style={{
-                    position: "relative",
-                    width: "90%",
-                    height: "100%",
-                    marginTop: "0px",
-                    overflowY: "auto",
-                    backgroundColor: "black",
-                    boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
-                    padding: "10px 10px",
-                    fontFamily:
-                      "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
-                  }}
-                />
-              </div>
-            )}
-          </Center>
-          <Right>
-            <ElementPropertiesPanel
-              updateElement={handleUpdateElement}
-              selectedElement={getElementById(selectedElementId)}
-            />
-          </Right>
-        </Body>
-      </Container>
-    </Suspense>
+              />
+            </div>
+          )}
+        </Center>
+        <Right>
+          <ElementPropertiesPanel
+            updateElement={handleUpdateElement}
+            selectedElement={getElementById(selectedElementId)}
+          />
+        </Right>
+      </Body>
+    </Container>
   );
 };
 
