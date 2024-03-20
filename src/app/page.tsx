@@ -106,7 +106,7 @@ export default function Home() {
                 <TemplateItem
                   onClick={() => handleOnSelectLayout(i)}
                   layout={layout}
-                  width="calc(100% / 5 - 15px)"
+                  width="calc(100% / 4 - 15px)"
                   key={i}
                 />
               ))
