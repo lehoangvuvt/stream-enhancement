@@ -23,9 +23,10 @@ import useKeyboard from "@/hooks/useKeyboard";
 import useClipboard from "@/hooks/useClipboard";
 import SquareItem from "./components/elements/square-item";
 import Layers from "./components/overlay-view/components/layers";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import SaveLayoutModal from "./components/save-layout-modal";
 import Loading from "@/components/loading";
+import { ArrowLeftOutlined, HomeOutlined } from "@ant-design/icons";
 
 const Container = styled.div`
   height: 100%;
@@ -72,11 +73,19 @@ const HeaderLeft = styled.div`
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
   box-sizing: border-box;
   padding-right: 20px;
   button {
+    &:nth-child(1) {
+      background-color: transparent;
+      font-size: 18px;
+      color: white;
+      border: none;
+      outline: none;
+      text-align: left;
+    }
     width: 32% !important;
     &.disabled {
       filter: brightness(50%);
@@ -237,6 +246,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const router = useRouter();
   const [isLoading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const [currentMode, setCurrentMode] = useState<"canvas" | "code">("canvas");
@@ -1222,6 +1232,9 @@ const SetupPage = () => {
     <Container>
       <Header>
         <HeaderLeft>
+          <button onClick={() => router.back()}>
+            <ArrowLeftOutlined />
+          </button>
           <button
             className={currentHistoryIndex <= 0 ? "disabled" : ""}
             onClick={() =>
