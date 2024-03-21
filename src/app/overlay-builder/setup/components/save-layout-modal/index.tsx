@@ -3,9 +3,10 @@
 import styled from "styled-components";
 import { OverlayMetadata } from "../../page";
 import { useEffect, useRef, useState } from "react";
-import { Flex, Input, InputRef, Tag, Tooltip, theme } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Flex, Input, InputRef, Tag, Tooltip, notification, theme } from "antd";
+import { CheckCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Layout } from "@/app/types/element.types";
+import { NotificationPlacement } from "antd/es/notification/interface";
 
 const Container = styled.div`
   display: flex;
@@ -16,7 +17,7 @@ const Body = styled.div`
   width: 100%;
   display: flex;
   flex-flow: column wrap;
-  gap: 15px;
+  gap: 10px;
 `;
 
 const FieldContainer = styled.div`
@@ -26,6 +27,9 @@ const FieldContainer = styled.div`
 
 const FieldTitle = styled.div`
   width: 25%;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.8);
 `;
 
 const FieldInput = styled.div`
@@ -44,7 +48,7 @@ const FieldInput = styled.div`
     font-weight: 500;
     color: rgba(0, 0, 0, 0.9);
     &::placeholder {
-      color: rgba(0, 0, 0, 0.5);
+      color: rgba(0, 0, 0, 0.4);
     }
   }
 `;
@@ -55,20 +59,30 @@ const Footer = styled.div`
   flex-flow: row wrap;
   align-items: center;
   justify-content: flex-end;
-  padding-top: 20px;
+  padding-top: 40px;
   button {
-    width: 25%;
-    height: 30px;
+    width: 100%;
+    height: 40px;
+    border-radius: 4px;
     outline: none;
     border: none;
     background-color: blue;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
     color: white;
     cursor: pointer;
+    opacity: 1;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 `;
 
 type Props = {
   overlayMetadata: OverlayMetadata;
+  closeModal: () => void;
 };
 
 const tagInputStyle: React.CSSProperties = {
@@ -79,7 +93,8 @@ const tagInputStyle: React.CSSProperties = {
   verticalAlign: "top",
 };
 
-const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
+const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
+  const [api, contextHolder] = notification.useNotification();
   const { token } = theme.useToken();
   const [title, setTitle] = useState("");
   const [authorName, setAuthorName] = useState("");
@@ -90,6 +105,15 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
   const [editInputValue, setEditInputValue] = useState("");
   const inputRef = useRef<InputRef>(null);
   const editInputRef = useRef<InputRef>(null);
+
+  const openNotification = (placement: NotificationPlacement) => {
+    api.info({
+      message: `Saved`,
+      description: "Your layout has been saved to our system.",
+      icon: <CheckCircleOutlined />,
+      placement,
+    });
+  };
 
   useEffect(() => {
     if (inputVisible) {
@@ -118,6 +142,12 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
     } else {
       localStorage.setItem("layouts", JSON.stringify([layout]));
     }
+
+    setAuthorName("");
+    setTags([]);
+    setTitle("");
+    closeModal();
+    setTimeout(() => openNotification("top"), 250);
   };
 
   const handleClose = (removedTag: string) => {
@@ -162,6 +192,7 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
 
   return (
     <Container>
+      {contextHolder}
       <Body>
         <FieldContainer>
           <FieldTitle>Title</FieldTitle>
@@ -208,7 +239,7 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
                 const tagElem = (
                   <Tag
                     key={tag}
-                    closable={index !== 0}
+                    closable={true}
                     style={{
                       userSelect: "none",
                       fontSize: "16px",
@@ -262,7 +293,16 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata }) => {
         </FieldContainer>
       </Body>
       <Footer>
-        <button onClick={save}>Save</button>
+        <button
+          disabled={
+            title.trim().length === 0 ||
+            authorName.trim().length === 0 ||
+            tags.length === 0
+          }
+          onClick={save}
+        >
+          Save
+        </button>
       </Footer>
     </Container>
   );

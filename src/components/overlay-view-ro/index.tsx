@@ -9,12 +9,13 @@ import { useEffect, useRef, useState } from "react";
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
   width: 100%;
   background-color: white;
-  aspect-ratio: ${(props) => props.$ratio[0] / props.$ratio[1]};
+  aspect-ratio: 16/9;
   background-image: ${(props) => `url("${props.$bgURL}")`};
   background-size: cover;
   background-position: center;
   overflow: hidden;
   position: relative;
+  pointer-events: none;
 `;
 
 type Props = {
@@ -30,7 +31,7 @@ const OverlayViewRO: React.FC<Props> = ({ overlayMetadata }) => {
       const parentEle = containerRef.current.parentElement;
       if (!parentEle) return;
       const ratio = parseFloat(
-        (parentEle.clientWidth / containerRef.current.clientWidth).toFixed(2)
+        (parentEle.clientWidth / containerRef.current.clientWidth).toFixed(4)
       );
       setRatio(ratio);
     }

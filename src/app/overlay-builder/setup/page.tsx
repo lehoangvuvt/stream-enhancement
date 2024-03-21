@@ -25,6 +25,7 @@ import SquareItem from "./components/elements/square-item";
 import Layers from "./components/overlay-view/components/layers";
 import { useSearchParams } from "next/navigation";
 import SaveLayoutModal from "./components/save-layout-modal";
+import Loading from "@/components/loading";
 
 const Container = styled.div`
   height: 100%;
@@ -236,6 +237,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const [isLoading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const [currentMode, setCurrentMode] = useState<"canvas" | "code">("canvas");
   const [isOpenCodeGenModal, setOpenCodeGenModal] = useState(false);
@@ -266,6 +268,10 @@ const SetupPage = () => {
     null
   );
   const [inSelectZoneIds, setInSelectZoneIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("id")) {
@@ -1211,6 +1217,7 @@ const SetupPage = () => {
     setOpenSaveModal(true);
   };
 
+  if (isLoading) return <Loading />;
   return (
     <Container>
       <Header>
@@ -1409,6 +1416,7 @@ const SetupPage = () => {
         footer={null}
       >
         <SaveLayoutModal
+          closeModal={() => setOpenSaveModal(false)}
           overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
         />
       </Modal>

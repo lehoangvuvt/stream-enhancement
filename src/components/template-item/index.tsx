@@ -18,7 +18,8 @@ const Container = styled.div`
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  gap: 15px;
+  margin-bottom: 5px;
+  gap: 10px;
 
   &:hover {
     transform: translate(2.5px, -2.5px);
@@ -32,9 +33,10 @@ const LayoutInfo = styled.div`
   display: flex;
   flex-flow: column wrap;
   gap: 10px;
+  box-sizing: border-box;
   & > div {
     width: 100%;
-    font-size: 16px;
+    font-size: 15px;
     &:nth-child(1) {
       color: #ffffff;
       font-weight: 700;
@@ -49,11 +51,18 @@ const LayoutInfo = styled.div`
       align-items: flex-start;
       justify-content: flex-start;
       gap: 5px;
+      margin-bottom: 5px;
       div {
         font-size: 12px;
-        color: white;
-        padding: 5px;
-        white-space: nowrap;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 6px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.2);
+        }
       }
     }
   }
@@ -62,7 +71,12 @@ const LayoutInfo = styled.div`
 const TemplateItem: React.FC<Props> = ({ layout, width, onClick }) => {
   return (
     <Container onClick={onClick} style={{ width: width }}>
-      <div style={{ width: "100%", aspectRatio: 16 / 9 }}>
+      <div
+        style={{
+          width: "100%",
+          aspectRatio: 16 / 9,
+        }}
+      >
         <OverlayViewRO overlayMetadata={layout.overlayMetadata} />
       </div>
       <LayoutInfo>
@@ -70,7 +84,7 @@ const TemplateItem: React.FC<Props> = ({ layout, width, onClick }) => {
         <div>{layout.authorName}</div>
         <div>
           {layout.tags.map((tag) => (
-            <div key={tag}>#{tag}</div>
+            <div onClick={() => {}} key={tag}>#{tag}</div>
           ))}
         </div>
       </LayoutInfo>

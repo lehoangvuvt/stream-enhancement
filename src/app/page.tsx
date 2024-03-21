@@ -4,9 +4,9 @@ import SearchBar from "@/components/search-bar";
 import TemplateItem from "@/components/template-item";
 import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
-import { OverlayMetadata } from "./overlay-builder/setup/page";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ELEMENT_TYPES, Layout } from "./types/element.types";
+import { off } from "process";
 
 const sampleLayouts: Layout[] = [
   {
@@ -965,9 +965,10 @@ const TemplatesList = styled.div`
 `;
 
 const Left = styled.div`
-  width: 15%;
+  width: 12%;
   background-color: #1e1f26;
   box-sizing: border-box;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
 `;
 
 const Right = styled.div`
@@ -977,15 +978,17 @@ const Right = styled.div`
 `;
 
 export default function Home() {
+  const params = useSearchParams();
   const [searchTxt, setSearchTxt] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [layouts, setLayouts] = useState<Layout[]>([]);
   const [searchedLayouts, setSearchedLayouts] = useState<Layout[]>([]);
   const router = useRouter();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchTxt.trim().length > 0) {
+  useEffect(() => {
+    const q = params.get("q");
+    if (typeof q === "string") {
+      setSearchTxt(q);
       const result = layouts.filter(
         (layout) =>
           layout.authorName.toUpperCase().includes(searchTxt.toUpperCase()) ||
@@ -994,7 +997,17 @@ export default function Home() {
       );
       setSearchedLayouts(result);
     } else {
+      setSearchTxt("");
       setSearchedLayouts([...layouts]);
+    }
+  }, [params]);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTxt.trim().length > 0) {
+      router.push("?q=" + searchTxt);
+    } else {
+      router.push("/");
     }
   };
 
@@ -1026,8 +1039,7 @@ export default function Home() {
           <form style={{ width: "100%" }} onSubmit={handleSubmit}>
             <SearchBar
               onClear={() => {
-                setSearchTxt("");
-                setSearchedLayouts([...layouts]);
+                router.push("/");
               }}
               placeholder="Search layouts..."
               value={searchTxt}
