@@ -7,18 +7,18 @@ const Logo = () => {
 
   return (
     <div
-      onClick={() => router.push("/")}
+      onClick={() => router.push("/search")}
       style={{
         cursor: "pointer",
         position: "relative",
-        width: "100%",
-        height: "100px",
-        marginBottom: "5px",
+        width: "80%",
+        height: "80px",
+        marginBottom: "10px",
       }}
     >
       <Image
         fill
-        style={{ objectFit: "cover", pointerEvents: "none" }}
+        style={{ objectFit: "contain", pointerEvents: "none" }}
         alt="logo"
         src={logo.src}
       />

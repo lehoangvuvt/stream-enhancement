@@ -1,114 +1,74 @@
 "use client";
 
-import SearchBar from "@/components/search-bar";
-import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Layout } from "./types/element.types";
-import GradientBGColor from "@/components/gradient-bg-button";
-import Logo from "@/components/logo";
+import { useRouter } from "next/navigation";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
+import "./home.css";
+import GradientBGColor from "@/components/gradient-bg-button";
 
 const Container = styled.div`
   background-color: #131417;
-  width: 100%;
-  min-height: 100vh;
+  top: 0;
+  left: 0;
   position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  box-sizing: border-box;
-  gap: 20px;
-`;
-
-const Header = styled.div`
   width: 100%;
-  padding: 10px 0px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Left = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 180px;
   height: 100%;
-  background-color: #1e1f26;
-  box-sizing: border-box;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-flow: column wrap;
-  align-items: center;
-  padding-top: 0px;
-  box-sizing: border-box;
-  z-index: 100;
-  overflow-x: hidden;
+  overflow: hidden;
 `;
-
-const Right = styled.div`
-  margin-left: 210px;
-  width: calc(100% - 210px);
-  display: flex;
-  flex-flow: column wrap;
-`;
-
 export default function Home() {
-  const params = useSearchParams();
-  const [searchTxt, setSearchTxt] = useState("");
-  const [layouts, setLayouts] = useState<Layout[]>([]);
   const router = useRouter();
-
-  // useEffect(() => {
-  //   const q = params.get("q");
-  //   if (typeof q === "string") {
-  //     setSearchTxt(q);
-  //     const result = layouts.filter(
-  //       (layout) =>
-  //         layout.authorName.toUpperCase().includes(searchTxt.toUpperCase()) ||
-  //         layout.title.toUpperCase().includes(searchTxt.toUpperCase()) ||
-  //         layout.tags.includes(searchTxt)
-  //     );
-  //     setSearchedLayouts(result);
-  //   } else {
-  //     setSearchTxt("");
-  //     setSearchedLayouts([...layouts]);
-  //   }
-  // }, [params]);
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchTxt.trim().length > 0) {
-      router.push("/search?q=" + searchTxt);
-    } else {
-      router.push("/search");
-    }
-  };
-
-  // useEffect(() => {
-  //   if (localStorage.getItem("layouts")) {
-  //     const a = localStorage.getItem("layouts");
-  //     if (a !== null) {
-  //       const b = JSON.parse(a) as Layout[];
-  //       setLayouts(b);
-  //       setSearchedLayouts(b);
-  //     }
-  //   } else {
-  //     localStorage.setItem("layouts", JSON.stringify(sampleLayouts));
-  //     setSearchedLayouts(sampleLayouts);
-  //     setLayouts(sampleLayouts);
-  //   }
-  //   setLoading(false);
-  // }, []);
-
-  const handleOnSelectLayout = (index: number) => {
-    router.push(`/overlay-builder/setup?id=${index}`);
-  };
-
   return (
-    <HeaderPanelLayout>
-      <h1>HOme</h1>
-    </HeaderPanelLayout>
+    <Container>
+      <div className="container">
+        <div className="container__item landing-page-container">
+          <div className="content__wrapper">
+            <div className="ellipses-container">
+              <h2 className="greeting">Layout Genius</h2>
+              <div className="ellipses ellipses__outer--thin">
+                <div className="ellipses ellipses__orbit"></div>
+              </div>
+              <div className="ellipses ellipses__outer--thick"></div>
+            </div>
+            <div
+              style={{
+                background: "transparent",
+                color: "white",
+                zIndex: 100,
+                position: "absolute",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                top: "35%",
+              }}
+            >
+              Create your layout and generate ReactJS Code
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px",
+                top: "44%",
+                position: "absolute",
+              }}
+            >
+              <GradientBGColor
+                style={{ width: "150px" }}
+                onClick={() => router.push("/search")}
+              >
+                Explore
+              </GradientBGColor>
+              <GradientBGColor
+                style={{ width: "150px" }}
+                onClick={() => router.push("/overlay-builder/setup")}
+              >
+                Start Create
+              </GradientBGColor>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Container>
   );
 }
