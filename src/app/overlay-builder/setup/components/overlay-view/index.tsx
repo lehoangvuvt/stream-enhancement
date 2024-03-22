@@ -19,7 +19,7 @@ import {
 import ElementContextMenu from "./components/element-context-menu";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`
-  width: 100%;
+  width: 800px;
   background-color: white;
   aspect-ratio: ${(props) => props.$ratio[0] / props.$ratio[1]};
   background-image: ${(props) => `url("${props.$bgURL}")`};

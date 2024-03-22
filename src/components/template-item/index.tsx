@@ -24,6 +24,7 @@ const Container = styled.div`
   &:hover {
     transform: translate(2.5px, -2.5px);
     background-color: #252830;
+    box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.5);
   }
 `;
 
@@ -84,7 +85,9 @@ const TemplateItem: React.FC<Props> = ({ layout, width, onClick }) => {
         <div>{layout.authorName}</div>
         <div>
           {layout.tags.map((tag) => (
-            <div onClick={() => {}} key={tag}>#{tag}</div>
+            <div onClick={() => {}} key={tag}>
+              #{tag}
+            </div>
           ))}
         </div>
       </LayoutInfo>

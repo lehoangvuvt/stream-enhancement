@@ -4,10 +4,12 @@ import SearchBar from "@/components/search-bar";
 import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Layout } from "./types/element.types";
 import GradientBGColor from "@/components/gradient-bg-button";
 import Logo from "@/components/logo";
-import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
+
+type Props = {
+  children: React.ReactNode;
+};
 
 const Container = styled.div`
   background-color: #131417;
@@ -54,28 +56,19 @@ const Right = styled.div`
   flex-flow: column wrap;
 `;
 
-export default function Home() {
+const HeaderPanelLayout: React.FC<Props> = ({ children }) => {
   const params = useSearchParams();
   const [searchTxt, setSearchTxt] = useState("");
-  const [layouts, setLayouts] = useState<Layout[]>([]);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   const q = params.get("q");
-  //   if (typeof q === "string") {
-  //     setSearchTxt(q);
-  //     const result = layouts.filter(
-  //       (layout) =>
-  //         layout.authorName.toUpperCase().includes(searchTxt.toUpperCase()) ||
-  //         layout.title.toUpperCase().includes(searchTxt.toUpperCase()) ||
-  //         layout.tags.includes(searchTxt)
-  //     );
-  //     setSearchedLayouts(result);
-  //   } else {
-  //     setSearchTxt("");
-  //     setSearchedLayouts([...layouts]);
-  //   }
-  // }, [params]);
+  useEffect(() => {
+    const q = params.get("q");
+    if (typeof q === "string") {
+      setSearchTxt(q);
+    } else {
+      setSearchTxt("");
+    }
+  }, [params]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,29 +79,34 @@ export default function Home() {
     }
   };
 
-  // useEffect(() => {
-  //   if (localStorage.getItem("layouts")) {
-  //     const a = localStorage.getItem("layouts");
-  //     if (a !== null) {
-  //       const b = JSON.parse(a) as Layout[];
-  //       setLayouts(b);
-  //       setSearchedLayouts(b);
-  //     }
-  //   } else {
-  //     localStorage.setItem("layouts", JSON.stringify(sampleLayouts));
-  //     setSearchedLayouts(sampleLayouts);
-  //     setLayouts(sampleLayouts);
-  //   }
-  //   setLoading(false);
-  // }, []);
-
-  const handleOnSelectLayout = (index: number) => {
-    router.push(`/overlay-builder/setup?id=${index}`);
-  };
-
   return (
-    <HeaderPanelLayout>
-      <h1>HOme</h1>
-    </HeaderPanelLayout>
+    <Container>
+      <Left>
+        <Logo />
+        <GradientBGColor
+          style={{ width: "80%" }}
+          onClick={() => router.push("/overlay-builder/setup")}
+        >
+          Create Layout
+        </GradientBGColor>
+      </Left>
+      <Right>
+        <Header>
+          <form style={{ width: "100%" }} onSubmit={handleSubmit}>
+            <SearchBar
+              onClear={() => {
+                setSearchTxt("");
+              }}
+              placeholder="Search layouts..."
+              value={searchTxt}
+              onChange={setSearchTxt}
+            />
+          </form>
+        </Header>
+        {children}
+      </Right>
+    </Container>
   );
-}
+};
+
+export default HeaderPanelLayout;

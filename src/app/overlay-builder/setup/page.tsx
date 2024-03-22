@@ -45,7 +45,7 @@ const Header = styled.div`
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 0px 25px;
+  padding: 0px 25px 0px 15px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.05);
   gap: 10px;
   button {
@@ -961,8 +961,8 @@ const SetupPage = () => {
     stylesText += `\tposition: absolute;\n`;
     stylesText += `\ttop: 0;\n`;
     stylesText += `\tleft: 0;\n`;
-    stylesText += `\twidth: 100%;\n`;
-    stylesText += `\theight: 100%;\n`;
+    stylesText += `\twidth: 800px;\n`;
+    stylesText += `\taspect-ratio: 16/9;\n`;
     stylesText += `\tbackground-image: url("${overlayMetaHistories[currentHistoryIndex].background_url}");\n`;
     stylesText += `${"`"};\n\n`;
     overlayMetaHistories[currentHistoryIndex].elements.forEach((ele) => {

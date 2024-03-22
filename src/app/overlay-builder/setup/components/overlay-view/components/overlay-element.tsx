@@ -247,7 +247,7 @@ const OverlayElement: React.FC<Props> = ({
         containerRef.current.parentElement?.offsetLeft ?? 0;
       const parentOffsetTop =
         containerRef.current.parentElement?.offsetTop ?? 0;
-      const parentWith = containerRef.current.parentElement?.offsetWidth ?? 0;
+      const parentWidth = containerRef.current.parentElement?.offsetWidth ?? 0;
       const parentHeight =
         containerRef.current.parentElement?.offsetHeight ?? 0;
 
@@ -255,7 +255,7 @@ const OverlayElement: React.FC<Props> = ({
       const height = containerRef.current.offsetHeight / 2;
 
       const leftInPercentage =
-        ((coords.x - parentOffsetLeft - width) / parentWith) * 100;
+        ((coords.x - parentOffsetLeft - width) / parentWidth) * 100;
       const topInPercentage =
         ((coords.y - parentOffsetTop - height) / parentHeight) * 100;
 
