@@ -35,7 +35,7 @@ export default function Home() {
       <div className="home-container">
         <div
           style={{
-            position: "fixed",
+            position: "absolute",
             left: "10%",
             top: "7%",
             width: "80%",
@@ -44,7 +44,7 @@ export default function Home() {
             alignItems: "center",
             justifyContent: "center",
             transition: "all 0.25s ease",
-            opacity: hoverMode ? 1 : 0.4,
+            opacity: hoverMode ? 1 : 0.5,
             transform:
               hoverMode === "explore"
                 ? "rotate(-15deg) scale(1.2)"
@@ -68,25 +68,22 @@ export default function Home() {
         </div>
         <div className="home-container__item landing-page-home-container">
           <div className="content__wrapper">
-            <div className="ellipses-home-container">
-              <div className="greeting">Layout Genius</div>
-              <div className="ellipses ellipses__outer--thin">
-                <div className="ellipses ellipses__orbit"></div>
-              </div>
-              <div className="ellipses ellipses__outer--thick"></div>
+            <div className="greeting">
+              Layout
+              <br />
+              Genius
             </div>
             <div
               style={{
                 background: "transparent",
-                color: "white",
+                color: "rgba(255,255,255,0.85)",
                 zIndex: 100,
-                position: "absolute",
                 width: "100%",
                 display: "flex",
                 justifyContent: "center",
-                top: "34%",
-                fontSize: "16px",
-                letterSpacing: "0.5px",
+                fontSize: "18px",
+                letterSpacing: "1px",
+                fontWeight: 500
               }}
             >
               Create your layout and generate ReactJS Code
@@ -97,8 +94,7 @@ export default function Home() {
                 justifyContent: "center",
                 alignItems: "center",
                 gap: "25px",
-                top: "42%",
-                position: "absolute",
+                marginTop: "30px",
               }}
             >
               <GradientBGColor

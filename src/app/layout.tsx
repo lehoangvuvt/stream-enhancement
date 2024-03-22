@@ -13,8 +13,8 @@ const rubikLines = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title: "Figma For Dev",
-  description: "Figma For Dev",
+  title: "Layout Genius",
+  description: "Layout Genius",
 };
 
 export default function RootLayout({
