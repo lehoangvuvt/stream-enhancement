@@ -44,18 +44,22 @@ export default function Home() {
             alignItems: "center",
             justifyContent: "center",
             transition: "all 0.25s ease",
-            opacity: hoverMode ? 1 : 0.5,
+            opacity: hoverMode ? 1 : 0.4,
             transform:
               hoverMode === "explore"
-                ? "rotate(-15deg) scale(1.2)"
+                ? `rotate(${Math.floor(Math.random() * 91)}deg) scale(1.2)`
                 : hoverMode === "create"
-                ? "rotate(15deg) scale(1.2)"
-                : "rotate(0deg) scale(1)",
+                ? `rotate(${Math.floor(Math.random() * 91)}deg) scale(1.2)`
+                : `rotate(0deg) scale(1)`,
             filter:
               hoverMode === "explore"
-                ? " hue-rotate(100deg)"
+                ? `hue-rotate(${Math.floor(
+                    Math.random() * (500 - 100 + 1) + 100
+                  )}deg)`
                 : hoverMode === "create"
-                ? " hue-rotate(200deg)"
+                ? `hue-rotate(${Math.floor(
+                    Math.random() * (500 - 100 + 1) + 100
+                  )}deg)`
                 : "none",
           }}
         >
@@ -83,7 +87,7 @@ export default function Home() {
                 justifyContent: "center",
                 fontSize: "18px",
                 letterSpacing: "1px",
-                fontWeight: 500
+                fontWeight: 500,
               }}
             >
               Create your layout and generate ReactJS Code
@@ -98,17 +102,21 @@ export default function Home() {
               }}
             >
               <GradientBGColor
-                onHover={() => setHoverMode("explore")}
+                onHover={() => {
+                  setHoverMode("explore");
+                }}
                 onLeave={() => setHoverMode(null)}
-                style={{ width: "150px" }}
+                style={{ width: "200px" }}
                 onClick={() => router.push("/search")}
               >
                 Explore
               </GradientBGColor>
               <GradientBGColor
-                onHover={() => setHoverMode("create")}
+                onHover={() => {
+                  setHoverMode("create");
+                }}
                 onLeave={() => setHoverMode(null)}
-                style={{ width: "150px" }}
+                style={{ width: "200px" }}
                 onClick={() => router.push("/overlay-builder/setup")}
               >
                 Create

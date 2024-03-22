@@ -86,10 +86,14 @@ const HeaderLeft = styled.div`
       outline: none;
       text-align: left;
     }
-    width: 32% !important;
-    &.disabled {
-      filter: brightness(50%);
-      cursor: not-allowed;
+    &:nth-child(2),
+    &:nth-child(3) {
+      background: #0099ff;
+      width: 38% !important;
+      &.disabled {
+        filter: brightness(50%);
+        cursor: not-allowed;
+      }
     }
   }
 `;
