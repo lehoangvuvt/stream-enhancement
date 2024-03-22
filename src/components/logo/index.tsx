@@ -11,9 +11,9 @@ const Logo = () => {
       style={{
         cursor: "pointer",
         position: "relative",
-        width: "80%",
-        height: "80px",
-        marginBottom: "10px",
+        width: "85%",
+        height: "75px",
+        marginBottom: "2.5px",
       }}
     >
       <Image

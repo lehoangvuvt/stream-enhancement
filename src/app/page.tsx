@@ -2,28 +2,58 @@
 
 import styled from "styled-components";
 import { useRouter } from "next/navigation";
-import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
 import "./home.css";
+import bgGif from "/public/gif/bg.gif";
 import GradientBGColor from "@/components/gradient-bg-button";
+import Image from "next/image";
 
 const Container = styled.div`
-  background-color: #131417;
+  background-color: black;
   top: 0;
   left: 0;
   position: absolute;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  animation: homeAppear 1s ease;
+  @keyframes homeAppear {
+    from {
+      filter: brightness(0%);
+    }
+    to {
+      filter: brightness(100%);
+    }
+  }
 `;
 export default function Home() {
   const router = useRouter();
   return (
     <Container>
       <div className="container">
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: "10%",
+            width: "100%",
+            height: "80%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: 0.5,
+          }}
+        >
+          <Image
+            src={bgGif.src}
+            alt="bg"
+            fill
+            style={{ objectFit: "contain" }}
+          />
+        </div>
         <div className="container__item landing-page-container">
           <div className="content__wrapper">
             <div className="ellipses-container">
-              <h2 className="greeting">Layout Genius</h2>
+              <div className="greeting">Layout Genius</div>
               <div className="ellipses ellipses__outer--thin">
                 <div className="ellipses ellipses__orbit"></div>
               </div>
@@ -38,7 +68,9 @@ export default function Home() {
                 width: "100%",
                 display: "flex",
                 justifyContent: "center",
-                top: "35%",
+                top: "36%",
+                fontSize: "15px",
+                letterSpacing: "0.5px",
               }}
             >
               Create your layout and generate ReactJS Code
@@ -49,7 +81,7 @@ export default function Home() {
                 justifyContent: "center",
                 alignItems: "center",
                 gap: "10px",
-                top: "44%",
+                top: "45%",
                 position: "absolute",
               }}
             >
@@ -63,7 +95,7 @@ export default function Home() {
                 style={{ width: "150px" }}
                 onClick={() => router.push("/overlay-builder/setup")}
               >
-                Start Create
+                Create
               </GradientBGColor>
             </div>
           </div>

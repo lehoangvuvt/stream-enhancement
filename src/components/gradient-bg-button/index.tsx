@@ -14,6 +14,10 @@ const Button = styled.button`
   outline: none;
   &:hover {
     animation: movingBG 1.25s ease-in infinite alternate;
+    & > div {
+      background-color: rgba(255, 255, 255, 0.95);
+      color: black;
+    }
   }
   @keyframes movingBG {
     0% {
@@ -48,6 +52,7 @@ const Inner = styled.div`
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  transition: all 0.25s ease-in;
 `;
 
 type Props = {
