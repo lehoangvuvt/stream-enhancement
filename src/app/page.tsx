@@ -32,15 +32,15 @@ export default function Home() {
       <div className="container">
         <div
           style={{
-            position: "absolute",
-            left: 0,
-            top: "10%",
-            width: "100%",
+            position: "fixed",
+            left: '10%',
+            top: '7%',
+            width: "80%",
             height: "80%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            opacity: 0.5,
+            opacity: 0.7,
           }}
         >
           <Image
@@ -80,7 +80,7 @@ export default function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                gap: "10px",
+                gap: "20px",
                 top: "45%",
                 position: "absolute",
               }}

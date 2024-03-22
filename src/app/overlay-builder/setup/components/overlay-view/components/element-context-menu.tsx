@@ -32,6 +32,8 @@ const Container = styled.div`
 
 const ContextMenuItem = styled.div`
   width: 100%;
+  min-height: 35px;
+  height: auto;
   display: flex;
   align-items: center;
   padding: 0px 15px;
