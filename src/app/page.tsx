@@ -29,12 +29,12 @@ export default function Home() {
   const router = useRouter();
   return (
     <Container>
-      <div className="container">
+      <div className="home-container">
         <div
           style={{
             position: "fixed",
-            left: '10%',
-            top: '7%',
+            left: "10%",
+            top: "7%",
             width: "80%",
             height: "80%",
             display: "flex",
@@ -50,9 +50,9 @@ export default function Home() {
             style={{ objectFit: "contain" }}
           />
         </div>
-        <div className="container__item landing-page-container">
+        <div className="home-container__item landing-page-home-container">
           <div className="content__wrapper">
-            <div className="ellipses-container">
+            <div className="ellipses-home-container">
               <div className="greeting">Layout Genius</div>
               <div className="ellipses ellipses__outer--thin">
                 <div className="ellipses ellipses__orbit"></div>
