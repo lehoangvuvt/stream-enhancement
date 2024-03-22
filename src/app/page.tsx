@@ -6,6 +6,7 @@ import "./home.css";
 import bgGif from "/public/gif/bg.gif";
 import GradientBGColor from "@/components/gradient-bg-button";
 import Image from "next/image";
+import { useState } from "react";
 
 const Container = styled.div`
   background-color: black;
@@ -27,6 +28,8 @@ const Container = styled.div`
 `;
 export default function Home() {
   const router = useRouter();
+  const [hoverMode, setHoverMode] = useState<string | null>(null);
+
   return (
     <Container>
       <div className="home-container">
@@ -40,14 +43,27 @@ export default function Home() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            opacity: 0.7,
+            transition: "all 0.25s ease",
+            opacity: hoverMode ? 1 : 0.4,
+            transform:
+              hoverMode === "explore"
+                ? "rotate(-15deg) scale(1.2)"
+                : hoverMode === "create"
+                ? "rotate(15deg) scale(1.2)"
+                : "rotate(0deg) scale(1)",
+            filter:
+              hoverMode === "explore"
+                ? " hue-rotate(100deg)"
+                : hoverMode === "create"
+                ? " hue-rotate(200deg)"
+                : "none",
           }}
         >
           <Image
             src={bgGif.src}
             alt="bg"
             fill
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: "contain", display: "block" }}
           />
         </div>
         <div className="home-container__item landing-page-home-container">
@@ -68,8 +84,8 @@ export default function Home() {
                 width: "100%",
                 display: "flex",
                 justifyContent: "center",
-                top: "36%",
-                fontSize: "15px",
+                top: "34%",
+                fontSize: "16px",
                 letterSpacing: "0.5px",
               }}
             >
@@ -80,18 +96,22 @@ export default function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                gap: "20px",
-                top: "45%",
+                gap: "25px",
+                top: "42%",
                 position: "absolute",
               }}
             >
               <GradientBGColor
+                onHover={() => setHoverMode("explore")}
+                onLeave={() => setHoverMode(null)}
                 style={{ width: "150px" }}
                 onClick={() => router.push("/search")}
               >
                 Explore
               </GradientBGColor>
               <GradientBGColor
+                onHover={() => setHoverMode("create")}
+                onLeave={() => setHoverMode(null)}
                 style={{ width: "150px" }}
                 onClick={() => router.push("/overlay-builder/setup")}
               >

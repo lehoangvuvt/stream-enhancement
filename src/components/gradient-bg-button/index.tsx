@@ -59,11 +59,24 @@ type Props = {
   children: React.ReactNode;
   style?: React.CSSProperties;
   onClick: () => void;
+  onHover?: () => void;
+  onLeave?: () => void;
 };
 
-const GradientBGColor: React.FC<Props> = ({ onClick, children, style }) => {
+const GradientBGColor: React.FC<Props> = ({
+  onClick,
+  onHover,
+  onLeave,
+  children,
+  style,
+}) => {
   return (
-    <Button style={style} onClick={onClick}>
+    <Button
+      onMouseEnter={() => onHover && onHover()}
+      onMouseLeave={() => onLeave && onLeave()}
+      style={style}
+      onClick={onClick}
+    >
       <Inner>{children}</Inner>
     </Button>
   );

@@ -21,6 +21,15 @@ const Container = styled.div`
   display: flex;
   box-sizing: border-box;
   gap: 20px;
+  animation: layoutAppear 0.2s ease;
+  @keyframes layoutAppear {
+    from {
+      filter: brightness(0%);
+    }
+    to {
+      filter: brightness(100%);
+    }
+  }
 `;
 
 const Header = styled.div`
