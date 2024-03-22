@@ -66,7 +66,7 @@ const HeaderPanelLayout: React.FC<Props> = ({ children }) => {
     if (typeof q === "string") {
       setSearchTxt(q);
     } else {
-      setSearchTxt("");
+      setSearchTxt("test");
     }
   }, [params]);
 
