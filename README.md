@@ -1,1 +1,1 @@
-- Visit demo: https://stream-enhancement.vercel.app/overlay-builder/setup
+- Visit demo: https://stream-enhancement.vercel.app
