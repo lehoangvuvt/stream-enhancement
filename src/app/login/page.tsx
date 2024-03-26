@@ -13,6 +13,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { UserInfo, useAppStore } from "@/zustand/store";
 import { useRouter } from "next/navigation";
+import UserService from "@/services/user.service";
 
 const Container = styled.div`
   width: 100%;
@@ -165,33 +166,22 @@ const Login = () => {
     setError(null);
     if (!username || !password) return;
     setLoading(true);
-    try {
-      const response = await axios({
-        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/login`,
-        method: "POST",
-        data: {
-          username,
-          password,
-        },
-        withCredentials: true,
-      });
+    const isSuccess = await UserService.login(username, password);
+    if (isSuccess) {
       await authenticate();
-    } catch (err) {
+    } else {
       setError("Invalid username or password");
       setLoading(false);
     }
   };
 
   const authenticate = async () => {
-    const auth = await axios({
-      url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/authenticate`,
-      method: "GET",
-      withCredentials: true,
-    });
-    const data = auth.data as UserInfo;
-    setUserInfo(data);
+    const data = await UserService.authenticate();
+    if (data) {
+      setUserInfo(data);
+      router.push("/search");
+    }
     setLoading(false);
-    router.push("/search");
   };
 
   return (

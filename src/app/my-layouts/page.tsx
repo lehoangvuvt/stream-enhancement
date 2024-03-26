@@ -2,14 +2,13 @@
 
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
 import { useAppStore } from "@/zustand/store";
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { Layout, Layout_API } from "../../types/element.types";
+import { Layout } from "../../types/element.types";
 import styled from "styled-components";
 import { useRouter } from "next/navigation";
 import OverlayViewRO from "@/components/overlay-view-ro";
 import Loading from "@/components/loading";
-import { Spin } from "antd";
+import UserService from "@/services/user.service";
 
 const Container = styled.div`
   width: 95%;
@@ -62,37 +61,34 @@ const MyLayoutsPage = () => {
 
   useEffect(() => {
     const getLayouts = async () => {
-      const response = await axios({
-        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/user/layouts`,
-        withCredentials: true,
-        method: "GET",
-      });
-      const data = response.data as { message: string; data: Layout_API[] };
-      const sortedByCreatedLayouts = data.data.sort(
-        (item1, item2) =>
-          new Date(item2.createdAt ?? new Date()).getTime() -
-          new Date(item1.createdAt ?? new Date()).getTime()
-      );
-      const layouts: Record<string, Layout[]> = {};
-      sortedByCreatedLayouts.forEach((layoutApi) => {
-        const date = new Date(layoutApi.createdAt ?? new Date());
-        const key = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
-        const layout: Layout = {
-          id: layoutApi.id,
-          authorName: layoutApi.author.username,
-          overlayMetadata: JSON.parse(layoutApi.metadata),
-          tags: layoutApi.tags,
-          title: layoutApi.name,
-          createdAt: layoutApi.createdAt,
-          name: layoutApi.name,
-        };
-        if (!layouts[key]) {
-          layouts[key] = [layout];
-        } else {
-          layouts[key].push(layout);
-        }
-      });
-      setLayouts(layouts);
+      const data = await UserService.getUserLayouts();
+      if (data) {
+        const sortedByCreatedLayouts = data.sort(
+          (item1, item2) =>
+            new Date(item2.createdAt ?? new Date()).getTime() -
+            new Date(item1.createdAt ?? new Date()).getTime()
+        );
+        const layouts: Record<string, Layout[]> = {};
+        sortedByCreatedLayouts.forEach((layoutApi) => {
+          const date = new Date(layoutApi.createdAt ?? new Date());
+          const key = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
+          const layout: Layout = {
+            id: layoutApi.id,
+            authorName: layoutApi.author.username,
+            overlayMetadata: JSON.parse(layoutApi.metadata),
+            tags: layoutApi.tags,
+            title: layoutApi.name,
+            createdAt: layoutApi.createdAt,
+            name: layoutApi.name,
+          };
+          if (!layouts[key]) {
+            layouts[key] = [layout];
+          } else {
+            layouts[key].push(layout);
+          }
+        });
+        setLayouts(layouts);
+      }
       setLoading(false);
     };
     if (userInfo) {
