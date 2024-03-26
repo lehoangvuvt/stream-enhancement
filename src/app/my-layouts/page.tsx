@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { useRouter } from "next/navigation";
 import OverlayViewRO from "@/components/overlay-view-ro";
 import Loading from "@/components/loading";
+import { Spin } from "antd";
 
 const Container = styled.div`
   width: 95%;
@@ -17,6 +18,7 @@ const Container = styled.div`
   flex-flow: column wrap;
   gap: 10px;
   box-sizing: border-box;
+  position: relative;
 `;
 
 const GroupByDateLayoutsContainer = styled.div`
@@ -100,11 +102,12 @@ const MyLayoutsPage = () => {
     }
   }, [userInfo]);
 
-  if (isLoading) return <Loading />;
   return (
     <HeaderPanelLayout showHeader={false}>
       <Container>
-        {layouts &&
+        {isLoading && <Loading />}
+        {!isLoading &&
+          layouts &&
           Object.keys(layouts).length > 0 &&
           Object.keys(layouts).map((key) => (
             <GroupByDateLayoutsContainer key={key}>

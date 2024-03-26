@@ -24,7 +24,7 @@ type Props = {
 
 const OverlayViewRO: React.FC<Props> = ({ overlayMetadata }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [ratio, setRatio] = useState(1);
+  const [ratio, setRatio] = useState(0);
 
   useEffect(() => {
     if (containerRef && containerRef.current) {
@@ -36,7 +36,6 @@ const OverlayViewRO: React.FC<Props> = ({ overlayMetadata }) => {
       setRatio(ratio);
     }
   }, []);
-
   return (
     <div
       ref={containerRef}

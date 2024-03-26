@@ -131,11 +131,12 @@ const LoginButton = styled.button`
 
 const Footer = styled.div`
   margin-top: 80px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
-  text-decoration: underline;
   cursor: pointer;
   &:hover {
     color: white;
+    text-decoration: underline;
   }
 `;
 
@@ -188,7 +189,6 @@ const Login = () => {
       withCredentials: true,
     });
     const data = auth.data as UserInfo;
-    console.log(data);
     setUserInfo(data);
     setLoading(false);
     router.push("/search");

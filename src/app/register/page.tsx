@@ -130,12 +130,13 @@ const LoginButton = styled.button`
 `;
 
 const Footer = styled.div`
-  margin-top: 40px;
+  margin-top: 45px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
-  text-decoration: underline;
   cursor: pointer;
   &:hover {
     color: white;
+    text-decoration: underline;
   }
 `;
 

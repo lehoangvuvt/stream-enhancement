@@ -59,14 +59,18 @@ const HeaderRight = styled.div`
     border: none;
     outline: none;
     border-radius: 4px;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 500;
+    font-size: 14px;
     &.sign-up-btn {
-      background-color: #388e3c;
+      width: auto;
+      background-color: transparent;
       color: white;
+      &:hover{
+        text-decoration: underline;
+      }
     }
     &.login-btn {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.15);
       color: white;
     }
     &.user-btn {
@@ -81,11 +85,9 @@ const HeaderRight = styled.div`
     &.sign-out-btn {
       background-color: transparent;
       color: white;
-      width: 70px;
-      transition: letter-spacing 0.1s ease;
+      width: 80px;
       &:hover {
         text-decoration: underline;
-        letter-spacing: 0.5px;
       }
     }
   }
@@ -226,7 +228,7 @@ const HeaderPanelLayout: React.FC<Props> = ({
                     <UserOutlined />
                   </button>
                   <button onClick={signOut} className="sign-out-btn">
-                    Sign out
+                    Sign Out
                   </button>
                 </>
               )}
