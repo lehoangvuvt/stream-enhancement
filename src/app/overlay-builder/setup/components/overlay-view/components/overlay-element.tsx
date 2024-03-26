@@ -7,7 +7,7 @@ import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
-} from "@/app/types/element.types";
+} from "@/types/element.types";
 import Image from "next/image";
 
 const Container = styled.div`

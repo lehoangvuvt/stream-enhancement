@@ -1,7 +1,7 @@
 "use client";
 
 import styled from "styled-components";
-import { Layout } from "../types/element.types";
+import { Layout } from "../../types/element.types";
 import TemplateItem from "@/components/template-item";
 import { useRouter } from "next/navigation";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
@@ -22,8 +22,8 @@ type Props = {
 const SearchView: React.FC<Props> = ({ layouts }) => {
   const router = useRouter();
 
-  const handleOnSelectLayout = (index: number) => {
-    router.push(`/overlay-builder/setup?id=${index}`);
+  const handleOnSelectLayout = (layout: Layout) => {
+    router.push(`/overlay-builder/setup?id=${layout.id}`);
   };
 
   return (
@@ -31,7 +31,7 @@ const SearchView: React.FC<Props> = ({ layouts }) => {
       <TemplatesList>
         {layouts.map((layout, i) => (
           <TemplateItem
-            onClick={() => handleOnSelectLayout(i)}
+            onClick={() => handleOnSelectLayout(layout)}
             layout={layout}
             width="calc(100% / 4 - 15px)"
             key={i}

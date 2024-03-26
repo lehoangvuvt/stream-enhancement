@@ -9,13 +9,14 @@ import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import { Modal } from "antd";
+import { Modal, notification } from "antd";
 import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
   Layout,
-} from "@/app/types/element.types";
+  Layout_API,
+} from "@/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
 // import { exportComponentAsJPEG } from "react-component-export-image";
 import ImageItem from "./components/elements/image-item";
@@ -27,6 +28,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import SaveLayoutModal from "./components/save-layout-modal";
 import Loading from "@/components/loading";
 import { ArrowLeftOutlined, HomeOutlined } from "@ant-design/icons";
+import { useAppStore } from "@/zustand/store";
+import axios from "axios";
 
 const Container = styled.div`
   height: 100%;
@@ -250,6 +253,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const { userInfo } = useAppStore();
   const router = useRouter();
   const [isLoading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -288,12 +292,24 @@ const SetupPage = () => {
   }, []);
 
   useEffect(() => {
+    const getLayoutDetails = async (id: string) => {
+      try {
+        const response = await axios({
+          url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/${id}`,
+          method: "GET",
+        });
+        const data = response.data;
+        const layoutApiDetails = data.data as Layout_API;
+        const overlayMetadata = JSON.parse(layoutApiDetails.metadata);
+        setOverlayMetaHistories([overlayMetadata]);
+      } catch (err) {
+        router.push("/search");
+      }
+    };
     if (searchParams.get("id")) {
-      const a = localStorage.getItem("layouts");
-      if (a) {
-        const b = JSON.parse(a) as Layout[];
-        const layout = b[Number(searchParams.get("id"))];
-        setOverlayMetaHistories([layout.overlayMetadata]);
+      const id = searchParams.get("id");
+      if (typeof id === "string") {
+        getLayoutDetails(id);
       }
     }
   }, [searchParams]);
@@ -1228,7 +1244,13 @@ const SetupPage = () => {
   };
 
   const save = () => {
-    setOpenSaveModal(true);
+    if (userInfo) {
+      setOpenSaveModal(true);
+    } else {
+      notification.open({
+        message: "You need to login to be able to save layout",
+      });
+    }
   };
 
   if (isLoading) return <Loading />;

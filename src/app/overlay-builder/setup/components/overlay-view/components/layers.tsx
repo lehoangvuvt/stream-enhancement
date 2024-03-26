@@ -1,6 +1,6 @@
 "use client";
 
-import { Element } from "@/app/types/element.types";
+import { Element } from "@/types/element.types";
 import styled from "styled-components";
 import LayerItem from "./layer-item";
 

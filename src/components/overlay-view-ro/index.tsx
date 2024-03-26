@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { OverlayMetadata } from "@/app/overlay-builder/setup/page";
 import OverlayElement from "@/app/overlay-builder/setup/components/overlay-view/components/overlay-element";
-import { CURSOR_TOOL_OPTIONS } from "@/app/types/element.types";
+import { CURSOR_TOOL_OPTIONS } from "@/types/element.types";
 import { useEffect, useRef, useState } from "react";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`

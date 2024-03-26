@@ -15,7 +15,7 @@ import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
-} from "@/app/types/element.types";
+} from "@/types/element.types";
 import ElementContextMenu from "./components/element-context-menu";
 
 const Container = styled.div<{ $ratio: [number, number]; $bgURL: string }>`

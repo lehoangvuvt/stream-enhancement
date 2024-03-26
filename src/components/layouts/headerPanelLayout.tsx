@@ -6,8 +6,13 @@ import styled from "styled-components";
 import { useRouter, useSearchParams } from "next/navigation";
 import GradientBGColor from "@/components/gradient-bg-button";
 import Logo from "@/components/logo";
+import { useAppStore } from "@/zustand/store";
+import { UserOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 type Props = {
+  showHeader?: boolean;
+  showPanel?: boolean;
   children: React.ReactNode;
 };
 
@@ -34,10 +39,56 @@ const Container = styled.div`
 
 const Header = styled.div`
   width: 100%;
-  padding: 10px 0px;
+  padding: 15px 30px 15px 0px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0px;
+  box-sizing: border-box;
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  button {
+    width: 100px;
+    height: 40px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    &.sign-up-btn {
+      background-color: #388e3c;
+      color: white;
+    }
+    &.login-btn {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    &.user-btn {
+      background-color: transparent;
+      color: white;
+      font-size: 18px;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+    &.sign-out-btn {
+      background-color: transparent;
+      color: white;
+      width: 70px;
+      transition: letter-spacing 0.1s ease;
+      &:hover {
+        text-decoration: underline;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
 `;
 
 const Left = styled.div`
@@ -58,6 +109,21 @@ const Left = styled.div`
   overflow-x: hidden;
 `;
 
+const MenuItem = styled.div`
+  width: 100%;
+  color: white;
+  padding: 0px 22px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 400;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+`;
+
 const Right = styled.div`
   margin-left: 210px;
   width: calc(100% - 210px);
@@ -65,19 +131,26 @@ const Right = styled.div`
   flex-flow: column wrap;
 `;
 
-const HeaderPanelLayout: React.FC<Props> = ({ children }) => {
+const HeaderPanelLayout: React.FC<Props> = ({
+  children,
+  showHeader = true,
+  showPanel = true,
+}) => {
+  const { userInfo } = useAppStore();
   const params = useSearchParams();
   const [searchTxt, setSearchTxt] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const q = params.get("q");
-    if (typeof q === "string") {
-      setSearchTxt(q);
-    } else {
-      setSearchTxt("test");
-    }
-  }, [params]);
+  const signOut = async () => {
+    try {
+      await axios({
+        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/sign-out`,
+        withCredentials: true,
+        method: "GET",
+      });
+    } catch (err) {}
+    window.location.reload();
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,28 +163,76 @@ const HeaderPanelLayout: React.FC<Props> = ({ children }) => {
 
   return (
     <Container>
-      <Left>
-        <Logo />
-        <GradientBGColor
-          style={{ width: "80%" }}
-          onClick={() => router.push("/overlay-builder/setup")}
-        >
-          Create Layout
-        </GradientBGColor>
-      </Left>
+      {showPanel && (
+        <Left>
+          <Logo />
+          <GradientBGColor
+            style={{ width: "80%", height: "48px", marginBottom: "15px" }}
+            onClick={() => router.push("/overlay-builder/setup")}
+          >
+            Create Layout
+          </GradientBGColor>
+
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexFlow: "column wrap",
+            }}
+          >
+            {userInfo && (
+              <MenuItem onClick={() => router.push("/my-layouts")}>
+                My Layouts
+              </MenuItem>
+            )}
+            <MenuItem onClick={() => router.push("/search?sortBy=pop")}>
+              Explore
+            </MenuItem>
+          </div>
+        </Left>
+      )}
       <Right>
-        <Header>
-          <form style={{ width: "100%" }} onSubmit={handleSubmit}>
-            <SearchBar
-              onClear={() => {
-                setSearchTxt("");
-              }}
-              placeholder="Search layouts..."
-              value={searchTxt}
-              onChange={setSearchTxt}
-            />
-          </form>
-        </Header>
+        {showHeader && (
+          <Header>
+            <form style={{ flex: 1 }} onSubmit={handleSubmit}>
+              <SearchBar
+                onClear={() => {
+                  setSearchTxt("");
+                }}
+                placeholder="Search layouts..."
+                value={searchTxt}
+                onChange={setSearchTxt}
+              />
+            </form>
+            <HeaderRight>
+              {!userInfo ? (
+                <>
+                  <button
+                    className="sign-up-btn"
+                    onClick={() => router.push("/register")}
+                  >
+                    Sign Up
+                  </button>
+                  <button
+                    className="login-btn"
+                    onClick={() => router.push("/login")}
+                  >
+                    Login
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="user-btn">
+                    <UserOutlined />
+                  </button>
+                  <button onClick={signOut} className="sign-out-btn">
+                    Sign out
+                  </button>
+                </>
+              )}
+            </HeaderRight>
+          </Header>
+        )}
         {children}
       </Right>
     </Container>

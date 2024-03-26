@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import OverlayViewRO from "../overlay-view-ro";
-import { Layout } from "@/app/types/element.types";
+import { Layout } from "@/types/element.types";
 
 type Props = {
   layout: Layout;

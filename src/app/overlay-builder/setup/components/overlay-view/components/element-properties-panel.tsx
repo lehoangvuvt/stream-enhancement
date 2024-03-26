@@ -1,6 +1,6 @@
 "use client";
 
-import { ELEMENT_TYPES, Element } from "@/app/types/element.types";
+import { ELEMENT_TYPES, Element } from "@/types/element.types";
 import ColorInput from "@/components/color-input";
 import HScrollInput from "@/components/h-scoll-input/HScrollInput";
 import { useState } from "react";

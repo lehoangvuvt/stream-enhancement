@@ -5,8 +5,9 @@ import { OverlayMetadata } from "../../page";
 import { useEffect, useRef, useState } from "react";
 import { Flex, Input, InputRef, Tag, Tooltip, notification, theme } from "antd";
 import { CheckCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { Layout } from "@/app/types/element.types";
+import { Layout } from "@/types/element.types";
 import { NotificationPlacement } from "antd/es/notification/interface";
+import axios from "axios";
 
 const Container = styled.div`
   display: flex;
@@ -97,7 +98,6 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
   const [api, contextHolder] = notification.useNotification();
   const { token } = theme.useToken();
   const [title, setTitle] = useState("");
-  const [authorName, setAuthorName] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -125,25 +125,21 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
     editInputRef.current?.focus();
   }, [editInputValue]);
 
-  const save = () => {
-    const layout: Layout = {
-      overlayMetadata,
-      authorName,
+  const save = async () => {
+    const data = {
+      metadata: JSON.stringify(overlayMetadata),
       tags,
-      title,
+      name: title,
     };
-    if (localStorage.getItem("layouts")) {
-      const a = localStorage.getItem("layouts");
-      if (a !== null) {
-        const b = JSON.parse(a) as Layout[];
-        b.push(layout);
-        localStorage.setItem("layouts", JSON.stringify(b));
-      }
-    } else {
-      localStorage.setItem("layouts", JSON.stringify([layout]));
-    }
-
-    setAuthorName("");
+    try {
+      const response = await axios({
+        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/create`,
+        method: "POST",
+        data,
+        withCredentials: true,
+      });
+      alert(true);
+    } catch (err) {}
     setTags([]);
     setTitle("");
     closeModal();
@@ -201,17 +197,6 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
               placeholder="Enter layout title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-            />
-          </FieldInput>
-        </FieldContainer>
-
-        <FieldContainer>
-          <FieldTitle>Author name</FieldTitle>
-          <FieldInput>
-            <input
-              placeholder="Enter author name"
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
             />
           </FieldInput>
         </FieldContainer>
@@ -294,11 +279,7 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
       </Body>
       <Footer>
         <button
-          disabled={
-            title.trim().length === 0 ||
-            authorName.trim().length === 0 ||
-            tags.length === 0
-          }
+          disabled={title.trim().length === 0 || tags.length === 0}
           onClick={save}
         >
           Save

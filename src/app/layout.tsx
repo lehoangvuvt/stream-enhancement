@@ -4,6 +4,7 @@ import StyledComponentsRegistry from "./registry";
 import ReactQueryProvider from "@/react-query/provider";
 import { Suspense } from "react";
 import "./globals.css";
+import AuthWrapper from "@/components/auth-wrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--inter" });
 const rubikLines = Orbitron({
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body className={`${inter.variable} ${rubikLines.variable}`}>
         <StyledComponentsRegistry>
           <ReactQueryProvider>
-            <Suspense>{children}</Suspense>
+            <Suspense>
+              <AuthWrapper>{children}</AuthWrapper>
+            </Suspense>
           </ReactQueryProvider>
         </StyledComponentsRegistry>
       </body>
