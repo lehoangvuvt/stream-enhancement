@@ -1258,7 +1258,11 @@ const SetupPage = () => {
     <Container>
       <Header>
         <HeaderLeft>
-          <button onClick={() => router.back()}>
+          <button
+            onClick={() => {
+              router.back();
+            }}
+          >
             <ArrowLeftOutlined />
           </button>
           <button

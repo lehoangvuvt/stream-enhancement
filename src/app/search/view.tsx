@@ -6,7 +6,7 @@ import TemplateItem from "@/components/template-item";
 import { useRouter } from "next/navigation";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
 
-const TemplatesList = styled.div`
+export const TemplatesList = styled.div`
   width: 100%;
   display: flex;
   flex-flow: row wrap;
@@ -29,12 +29,12 @@ const SearchView: React.FC<Props> = ({ layouts }) => {
   return (
     <HeaderPanelLayout>
       <TemplatesList>
-        {layouts.map((layout, i) => (
+        {layouts.map((layout) => (
           <TemplateItem
             onClick={() => handleOnSelectLayout(layout)}
             layout={layout}
             width="calc(100% / 4 - 15px)"
-            key={i}
+            key={layout.id}
           />
         ))}
       </TemplatesList>

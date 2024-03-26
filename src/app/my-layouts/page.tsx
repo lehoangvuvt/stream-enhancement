@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import OverlayViewRO from "@/components/overlay-view-ro";
 import Loading from "@/components/loading";
 import UserService from "@/services/user.service";
+import TemplateItem from "@/components/template-item";
 
 const Container = styled.div`
   width: 95%;
@@ -42,15 +43,16 @@ const LayoutsContainer = styled.div`
   width: 100%;
   display: flex;
   flex-flow: row wrap;
-  gap: 10px;
+  gap: 15px;
   margin-top: 5px;
 `;
 
 const LayoutItem = styled.div`
-  width: 20%;
+  width: 19%;
   aspect-ratio: 16/9;
   background-color: rgba(255, 255, 255, 1);
   overflow: hidden;
+  cursor: pointer;
 `;
 
 const MyLayoutsPage = () => {
@@ -109,10 +111,15 @@ const MyLayoutsPage = () => {
             <GroupByDateLayoutsContainer key={key}>
               <DateTime>{key}</DateTime>
               <LayoutsContainer>
-                {layouts[key].map((layout, lIndex) => (
-                  <LayoutItem key={lIndex}>
-                    <OverlayViewRO overlayMetadata={layout.overlayMetadata} />
-                  </LayoutItem>
+                {layouts[key].map((layout) => (
+                  <TemplateItem
+                    layout={layout}
+                    width="calc(100% / 5 - 15px)"
+                    key={layout.id}
+                    onClick={() =>
+                      router.push(`/overlay-builder/setup?id=${layout.id}`)
+                    }
+                  />
                 ))}
               </LayoutsContainer>
             </GroupByDateLayoutsContainer>
