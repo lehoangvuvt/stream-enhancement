@@ -4,14 +4,12 @@ import GradientBGColor from "@/components/gradient-bg-button";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
 import {
   ArrowRightOutlined,
-  FacebookFilled,
   GithubFilled,
   GoogleOutlined,
 } from "@ant-design/icons";
-import { FormEvent, FormEventHandler, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
-import { UserInfo, useAppStore } from "@/zustand/store";
+import { useAppStore } from "@/zustand/store";
 import { useRouter } from "next/navigation";
 import UserService from "@/services/user.service";
 
@@ -73,6 +71,7 @@ const SocialLoginContainer = styled.div`
   button {
     width: 100%;
     flex: 1;
+    max-height: 70px;
     div {
       display: flex;
       align-items: center;
@@ -80,6 +79,10 @@ const SocialLoginContainer = styled.div`
       gap: 10px;
       box-sizing: border-box;
       padding-left: 20px;
+      span {
+        font-size: 24px;
+        margin-right: 5px;
+      }
     }
   }
 `;
@@ -184,6 +187,32 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handleOAuthGoogle = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+    const redirectURI = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL ?? "";
+    const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const options = {
+      redirect_uri: redirectURI,
+      client_id: clientId,
+      access_type: "offline",
+      response_type: "code",
+      prompt: "consent",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+      ].join(" "),
+    };
+    const qs = new URLSearchParams(options);
+    router.push(`${rootUrl}?${qs.toString()}`);
+  };
+
+  const handleOAuthGithub = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? "";
+    const redirectURL = process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URL ?? "";
+    const gitHubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURL}&scope=user`;
+    router.push(gitHubUrl);
+  };
+
   return (
     <HeaderPanelLayout showHeader={false}>
       <Container>
@@ -222,15 +251,11 @@ const Login = () => {
             /
           </div>
           <SocialLoginContainer>
-            <GradientBGColor onClick={() => {}}>
+            <GradientBGColor onClick={handleOAuthGoogle}>
               <GoogleOutlined />
               Sign in with Google
             </GradientBGColor>
-            <GradientBGColor onClick={() => {}}>
-              <FacebookFilled />
-              Sign in with Facebook
-            </GradientBGColor>
-            <GradientBGColor onClick={() => {}}>
+            <GradientBGColor onClick={handleOAuthGithub}>
               <GithubFilled />
               Sign in with Github
             </GradientBGColor>

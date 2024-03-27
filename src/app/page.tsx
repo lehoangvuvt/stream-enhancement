@@ -107,7 +107,7 @@ export default function Home() {
                 }}
                 onLeave={() => setHoverMode(null)}
                 style={{ width: "200px" }}
-                onClick={() => router.push("/search")}
+                onClick={() => router.push("/explore")}
               >
                 Explore
               </GradientBGColor>

@@ -48,6 +48,20 @@ class UserService {
             return null
         }
     }
+    static async register(payload: { username: string, password: string, email: string }): Promise<string> {
+        const data = payload
+        try {
+            const response = await axios({
+                url: `${baseUrl}/user/register`,
+                method: "POST",
+                data,
+                withCredentials: true
+            })
+            return 'success'
+        } catch (ex: any) {
+            return ex.response.data.message
+        }
+    }
 }
 
 export default UserService

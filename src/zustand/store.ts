@@ -4,6 +4,7 @@ export type UserInfo = {
     username: string;
     name: string;
     id: number;
+    avatar?: string;
 }
 
 export type State = {

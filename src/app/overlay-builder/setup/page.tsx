@@ -30,6 +30,7 @@ import Loading from "@/components/loading";
 import { ArrowLeftOutlined, HomeOutlined } from "@ant-design/icons";
 import { useAppStore } from "@/zustand/store";
 import axios from "axios";
+import ReposModal from "./components/repos-modal";
 
 const Container = styled.div`
   height: 100%;
@@ -254,6 +255,7 @@ export type OverlayMetadata = {
 
 const SetupPage = () => {
   const { userInfo } = useAppStore();
+  const [isOpenReposModal, setOpenReposModal] = useState(false);
   const router = useRouter();
   const [isLoading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -970,8 +972,7 @@ const SetupPage = () => {
     return text;
   };
 
-  const generateCode = () => {
-    setOpenCodeGenModal(true);
+  const getCode = () => {
     const containerElement = document.getElementById("drop-zone-element");
     if (!containerElement) return;
     const containerEleWidth = containerElement.clientWidth;
@@ -1035,6 +1036,13 @@ const SetupPage = () => {
     text += "\n";
     text += `const MyComponent = () => { \n\treturn (\n\t  <Container>${generateRenderChildElementsCode()}\t  </Container>\n\t) \n}\n\n`;
     text += `export default MyComponent;`;
+    return text;
+  };
+
+  const generateCode = () => {
+    setOpenCodeGenModal(true);
+    const text = getCode();
+    if (!text) return;
     setGeneratedCode(text);
     setTimeout(() => {
       setSelectedElementId(null);
@@ -1253,6 +1261,37 @@ const SetupPage = () => {
     }
   };
 
+  const handleConnectRepo = async () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? "";
+    const redirectURL =
+      process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URL +
+      "/repo/" +
+      searchParams.get("id");
+    const gitHubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURL}&scope=repo`;
+    router.push(gitHubUrl);
+  };
+
+  const commit = async (repo: any) => {
+    const code = getCode();
+    const data = {
+      code,
+      repo,
+    };
+    if (!code) return;
+    const response = await axios({
+      url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/oauth/github-commit`,
+      withCredentials: true,
+      method: "POST",
+      data,
+    });
+  };
+
+  useEffect(() => {
+    if (searchParams && searchParams.get("mode") === "granted") {
+      setOpenReposModal(true);
+    }
+  }, [searchParams]);
+
   if (isLoading) return <Loading />;
   return (
     <Container>
@@ -1323,6 +1362,7 @@ const SetupPage = () => {
         <HeaderRight>
           {/* <button onClick={downloadLayout}>Tải layout</button> */}
           {/* <button onClick={generateCode}>Generate Code</button> */}
+          <button onClick={handleConnectRepo}>Commit to repo</button>
           <button onClick={save}>Save layout</button>
         </HeaderRight>
       </Header>
@@ -1462,6 +1502,16 @@ const SetupPage = () => {
           closeModal={() => setOpenSaveModal(false)}
           overlayMetadata={overlayMetaHistories[currentHistoryIndex]}
         />
+      </Modal>
+      <Modal
+        title={null}
+        closeIcon={null}
+        open={isOpenReposModal}
+        onOk={() => {}}
+        onCancel={() => setOpenReposModal(false)}
+        footer={null}
+      >
+        <ReposModal commit={commit} />
       </Modal>
     </Container>
   );

@@ -9,6 +9,7 @@ import Logo from "@/components/logo";
 import { useAppStore } from "@/zustand/store";
 import { UserOutlined } from "@ant-design/icons";
 import axios from "axios";
+import Image from "next/image";
 
 type Props = {
   showHeader?: boolean;
@@ -65,7 +66,7 @@ const HeaderRight = styled.div`
       width: auto;
       background-color: transparent;
       color: white;
-      &:hover{
+      &:hover {
         text-decoration: underline;
       }
     }
@@ -80,6 +81,9 @@ const HeaderRight = styled.div`
       width: 35px;
       height: 35px;
       border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background-color: rgba(255, 255, 255, 0.4);
     }
     &.sign-out-btn {
@@ -187,9 +191,7 @@ const HeaderPanelLayout: React.FC<Props> = ({
                 My Layouts
               </MenuItem>
             )}
-            <MenuItem onClick={() => router.push("/search?sortBy=pop")}>
-              Explore
-            </MenuItem>
+            <MenuItem onClick={() => router.push("/explore")}>Explore</MenuItem>
           </div>
         </Left>
       )}
@@ -225,7 +227,19 @@ const HeaderPanelLayout: React.FC<Props> = ({
               ) : (
                 <>
                   <button className="user-btn">
-                    <UserOutlined />
+                    {userInfo?.avatar ? (
+                      <img
+                        src={userInfo.avatar}
+                        alt="avatar"
+                        style={{
+                          width: "35px",
+                          height: "35px",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    ) : (
+                      <UserOutlined />
+                    )}
                   </button>
                   <button onClick={signOut} className="sign-out-btn">
                     Sign Out

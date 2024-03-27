@@ -1,18 +1,13 @@
 "use client";
 
-import GradientBGColor from "@/components/gradient-bg-button";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
-import {
-  ArrowRightOutlined,
-  FacebookFilled,
-  GithubFilled,
-  GoogleOutlined,
-} from "@ant-design/icons";
-import { FormEvent, FormEventHandler, useEffect, useState } from "react";
+import { ArrowRightOutlined } from "@ant-design/icons";
+import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
-import { UserInfo, useAppStore } from "@/zustand/store";
+import { useAppStore } from "@/zustand/store";
 import { useRouter } from "next/navigation";
+import UserService from "@/services/user.service";
+import validator from "validator";
 
 const Container = styled.div`
   width: 100%;
@@ -64,25 +59,6 @@ const Input = styled.input`
   }
 `;
 
-const SocialLoginContainer = styled.div`
-  width: calc(50% - 50px);
-  display: flex;
-  flex-flow: column wrap;
-  gap: 15px;
-  button {
-    width: 100%;
-    flex: 1;
-    div {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 10px;
-      box-sizing: border-box;
-      padding-left: 20px;
-    }
-  }
-`;
-
 const LoginButton = styled.button`
   width: 100%;
   padding: 20px 30px;
@@ -130,7 +106,7 @@ const LoginButton = styled.button`
 `;
 
 const Footer = styled.div`
-  margin-top: 45px;
+  margin-top: 60px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -153,8 +129,11 @@ const Register = () => {
   const { userInfo, setUserInfo } = useAppStore();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [rePassword, setRePassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [responseError, setResponseError] = useState<string | null>(null);
+  const [passError, setPassError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -163,38 +142,43 @@ const Register = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    if (!username || !password) return;
-    setLoading(true);
-    try {
-      const response = await axios({
-        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/login`,
-        method: "POST",
-        data: {
-          username,
-          password,
-        },
-        withCredentials: true,
-      });
-      await authenticate();
-    } catch (err) {
-      setError("Invalid username or password");
-      setLoading(false);
+    setResponseError(null);
+    setPassError(null);
+    setEmailError(null);
+    const payload = {
+      username,
+      password,
+      email,
+    };
+    const response = await UserService.register(payload);
+    if (response === "success") {
+    } else {
+      if (response.includes("username")) {
+        setResponseError("Username already existed");
+      }
+      if (response.includes("email")) {
+        setResponseError("Email already existed");
+      }
     }
   };
 
-  const authenticate = async () => {
-    const auth = await axios({
-      url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/authenticate`,
-      method: "GET",
-      withCredentials: true,
-    });
-    const data = auth.data as UserInfo;
-    console.log(data);
-    setUserInfo(data);
-    setLoading(false);
-    router.push("/search");
-  };
+  useEffect(() => {
+    if (password !== "" && rePassword !== "") {
+      if (password !== rePassword) {
+        setPassError("Password does not match");
+      } else {
+        setPassError(null);
+      }
+    }
+  }, [password, rePassword]);
+
+  useEffect(() => {
+    if (email.trim().length > 0 && !validator.isEmail(email)) {
+      setEmailError("Invalid email format");
+    } else {
+      setEmailError(null);
+    }
+  }, [email]);
 
   return (
     <HeaderPanelLayout showHeader={false}>
@@ -209,6 +193,12 @@ const Register = () => {
               placeholder="Username"
             />
             <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="abc@xyz.com"
+            />
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -220,11 +210,24 @@ const Register = () => {
               onChange={(e) => setRePassword(e.target.value)}
               placeholder="Repeat your password"
             />
-            <LoginButton disabled={!username || !password || isLoading}>
+            <LoginButton
+              disabled={
+                emailError ||
+                passError ||
+                username.trim() === "" ||
+                email.trim() === "" ||
+                password.trim() === "" ||
+                rePassword.trim() === ""
+                  ? true
+                  : false
+              }
+            >
               Register
               <ArrowRightOutlined />
             </LoginButton>
-            {error && <ErrorMsg>{error}</ErrorMsg>}
+            {responseError && <ErrorMsg>{responseError}</ErrorMsg>}
+            {passError && <ErrorMsg>{passError}</ErrorMsg>}
+            {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
           </NormalLoginContainer>
         </Body>
         <Footer
