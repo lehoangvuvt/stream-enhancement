@@ -8,6 +8,7 @@ import { CheckCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Layout } from "@/types/element.types";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";
+import LayoutService from "@/services/layout.service";
 
 const Container = styled.div`
   display: flex;
@@ -126,24 +127,17 @@ const SaveLayoutModal: React.FC<Props> = ({ overlayMetadata, closeModal }) => {
   }, [editInputValue]);
 
   const save = async () => {
-    const data = {
-      metadata: JSON.stringify(overlayMetadata),
+    const response = await LayoutService.createLayout(
+      title,
       tags,
-      name: title,
-    };
-    try {
-      const response = await axios({
-        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/create`,
-        method: "POST",
-        data,
-        withCredentials: true,
-      });
-      alert(true);
-    } catch (err) {}
+      overlayMetadata
+    );
+    if (response) {
+      setTimeout(() => openNotification("top"), 250);
+    }
     setTags([]);
     setTitle("");
     closeModal();
-    setTimeout(() => openNotification("top"), 250);
   };
 
   const handleClose = (removedTag: string) => {

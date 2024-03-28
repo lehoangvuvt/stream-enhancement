@@ -8,6 +8,7 @@ import { useAppStore } from "@/zustand/store";
 import { useRouter } from "next/navigation";
 import UserService from "@/services/user.service";
 import validator from "validator";
+import GradientBgButton from "@/components/gradient-bg-button";
 
 const Container = styled.div`
   width: 100%;
@@ -26,7 +27,7 @@ const Title = styled.div`
   padding: 40px 0px;
   font-size: 26px;
   margin-top: 30px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 `;
 
 const Body = styled.div`
@@ -59,57 +60,12 @@ const Input = styled.input`
   }
 `;
 
-const LoginButton = styled.button`
-  width: 100%;
-  padding: 20px 30px;
-  background-image: linear-gradient(
-    to right,
-    #00c299,
-    #d5cc73,
-    #00c299,
-    #d5cc73
-  );
-  background-size: 300% 300%;
-  background-position: 0% 100%;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  outline: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  filter: brightness(100%);
-  transition: padding 0.25s ease;
-  &:disabled {
-    filter: brightness(50%);
-    cursor: not-allowed;
-    &:hover {
-      animation: none;
-      padding: 20px 30px;
-    }
-  }
-  &:hover {
-    animation: LoginButtonHover 1s ease 0s;
-    padding: 20px 20px;
-    @keyframes LoginButtonHover {
-      from {
-        background-position: 0% 100%;
-      }
-      to {
-        background-position: 100% 100%;
-      }
-    }
-  }
-`;
-
 const Footer = styled.div`
-  margin-top: 60px;
+  margin-top: 40px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
+  transition: all 0.2s ease;
   &:hover {
     color: white;
     text-decoration: underline;
@@ -129,7 +85,6 @@ const Register = () => {
   const { userInfo, setUserInfo } = useAppStore();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
   const [rePassword, setRePassword] = useState("");
   const [responseError, setResponseError] = useState<string | null>(null);
   const [passError, setPassError] = useState<string | null>(null);
@@ -148,7 +103,6 @@ const Register = () => {
     const payload = {
       username,
       password,
-      email,
     };
     const response = await UserService.register(payload);
     if (response === "success") {
@@ -172,14 +126,6 @@ const Register = () => {
     }
   }, [password, rePassword]);
 
-  useEffect(() => {
-    if (email.trim().length > 0 && !validator.isEmail(email)) {
-      setEmailError("Invalid email format");
-    } else {
-      setEmailError(null);
-    }
-  }, [email]);
-
   return (
     <HeaderPanelLayout showHeader={false}>
       <Container>
@@ -193,12 +139,6 @@ const Register = () => {
               placeholder="Username"
             />
             <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="abc@xyz.com"
-            />
-            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -210,12 +150,11 @@ const Register = () => {
               onChange={(e) => setRePassword(e.target.value)}
               placeholder="Repeat your password"
             />
-            <LoginButton
+            <GradientBgButton
               disabled={
                 emailError ||
                 passError ||
                 username.trim() === "" ||
-                email.trim() === "" ||
                 password.trim() === "" ||
                 rePassword.trim() === ""
                   ? true
@@ -224,10 +163,9 @@ const Register = () => {
             >
               Register
               <ArrowRightOutlined />
-            </LoginButton>
+            </GradientBgButton>
             {responseError && <ErrorMsg>{responseError}</ErrorMsg>}
             {passError && <ErrorMsg>{passError}</ErrorMsg>}
-            {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
           </NormalLoginContainer>
         </Body>
         <Footer

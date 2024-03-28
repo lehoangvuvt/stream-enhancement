@@ -4,12 +4,11 @@ import SearchBar from "@/components/search-bar";
 import { FormEvent, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useRouter, useSearchParams } from "next/navigation";
-import GradientBGColor from "@/components/gradient-bg-button";
 import Logo from "@/components/logo";
 import { useAppStore } from "@/zustand/store";
 import { UserOutlined } from "@ant-design/icons";
 import axios from "axios";
-import Image from "next/image";
+import GradientBorderButton from "../gradient-border-button";
 
 type Props = {
   showHeader?: boolean;
@@ -122,7 +121,7 @@ const MenuItem = styled.div`
   height: 45px;
   display: flex;
   align-items: center;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   font-weight: 400;
   &:hover {
@@ -172,12 +171,12 @@ const HeaderPanelLayout: React.FC<Props> = ({
       {showPanel && (
         <Left>
           <Logo />
-          <GradientBGColor
+          <GradientBorderButton
             style={{ width: "80%", height: "48px", marginBottom: "15px" }}
             onClick={() => router.push("/overlay-builder/setup")}
           >
             Create Layout
-          </GradientBGColor>
+          </GradientBorderButton>
 
           <div
             style={{

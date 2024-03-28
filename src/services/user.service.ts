@@ -48,7 +48,7 @@ class UserService {
             return null
         }
     }
-    static async register(payload: { username: string, password: string, email: string }): Promise<string> {
+    static async register(payload: { username: string, password: string }): Promise<string> {
         const data = payload
         try {
             const response = await axios({

@@ -55,6 +55,7 @@ export type Layout_API = {
   tags: string[]
   metadata: string;
   authorId: number;
+  status: 'draft' | 'published'
   author: {
     username: string;
     id: number;

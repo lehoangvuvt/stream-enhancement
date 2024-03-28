@@ -2,84 +2,66 @@ import styled from "styled-components";
 
 const Button = styled.button`
   width: 100%;
-  height: 52px;
-  position: relative;
-  background: linear-gradient(to right, #ef5350, #0099ff, #fffc00, #25d366);
-  background-position: 50% 0%;
+  padding: 20px 30px;
+  background-image: linear-gradient(
+    to right,
+    #00c299,
+    #d5cc73,
+    #00c299,
+    #d5cc73
+  );
   background-size: 300% 300%;
-  padding: 3.5px 3.5px;
-  cursor: pointer;
-  border-radius: 3px;
-  border: none;
-  outline: none;
-  &:hover {
-    animation: movingBG 1.25s ease-in infinite alternate;
-    & > div {
-      background-color: rgba(255, 255, 255, 0.95);
-      color: black;
-    }
-  }
-  @keyframes movingBG {
-    0% {
-      background-position: 50% 0%;
-    }
-    25% {
-      background-position: 100% 0%;
-    }
-    50% {
-      background-position: 150% 0%;
-    }
-    75% {
-      background-position: 200% 0%;
-    }
-    100% {
-      background-position: 250% 0%;
-    }
-  }
-`;
-
-const Inner = styled.div`
-  border-radius: 3px;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: black;
-  border: none;
-  outline: none;
-  color: white;
+  background-position: 0% 100%;
   font-size: 16px;
+  font-weight: 600;
+  border: none;
+  outline: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  transition: all 0.25s ease-in;
+  justify-content: space-between;
+  filter: brightness(100%);
+  transition: padding 0.25s ease;
+  &:disabled {
+    filter: brightness(50%);
+    cursor: not-allowed;
+    &:hover {
+      animation: none;
+      padding: 20px 30px;
+    }
+  }
+  &:hover {
+    animation: LoginButtonHover 1s ease 0s;
+    padding: 20px 20px;
+    @keyframes LoginButtonHover {
+      from {
+        background-position: 0% 100%;
+      }
+      to {
+        background-position: 100% 100%;
+      }
+    }
+  }
 `;
 
 type Props = {
   children: React.ReactNode;
-  style?: React.CSSProperties;
-  onClick: () => void;
-  onHover?: () => void;
-  onLeave?: () => void;
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
-const GradientBGColor: React.FC<Props> = ({
-  onClick,
-  onHover,
-  onLeave,
+const GradientBgButton: React.FC<Props> = ({
   children,
-  style,
+  onClick,
+  disabled = false,
 }) => {
   return (
-    <Button
-      onMouseEnter={() => onHover && onHover()}
-      onMouseLeave={() => onLeave && onLeave()}
-      style={style}
-      onClick={onClick}
-    >
-      <Inner>{children}</Inner>
+    <Button disabled={disabled} onClick={onClick}>
+      {children}
     </Button>
   );
 };
 
-export default GradientBGColor;
+export default GradientBgButton;

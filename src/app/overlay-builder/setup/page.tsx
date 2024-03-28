@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import BackgroundItem, { TBackgroundItem } from "./components/background-item";
 import OverlayView from "./components/overlay-view";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import TextItem from "./components/elements/text-item";
 import { XYCoord } from "react-dnd";
 import HighlightAltIcon from "@mui/icons-material/HighlightAlt";
@@ -14,7 +14,6 @@ import {
   CURSOR_TOOL_OPTIONS,
   ELEMENT_TYPES,
   Element,
-  Layout,
   Layout_API,
 } from "@/types/element.types";
 import ElementPropertiesPanel from "./components/overlay-view/components/element-properties-panel";
@@ -27,10 +26,13 @@ import Layers from "./components/overlay-view/components/layers";
 import { useRouter, useSearchParams } from "next/navigation";
 import SaveLayoutModal from "./components/save-layout-modal";
 import Loading from "@/components/loading";
-import { ArrowLeftOutlined, HomeOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useAppStore } from "@/zustand/store";
 import axios from "axios";
 import ReposModal from "./components/repos-modal";
+import GithubService from "@/services/github.service";
+import LayoutService from "@/services/layout.service";
+import { NotificationPlacement } from "antd/es/notification/interface";
 
 const Container = styled.div`
   height: 100%;
@@ -137,6 +139,9 @@ const HeaderRight = styled.div`
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  button {
+    font-size: 13px;
+  }
 `;
 
 const Body = styled.div`
@@ -254,6 +259,7 @@ export type OverlayMetadata = {
 };
 
 const SetupPage = () => {
+  const [api, contextHolder] = notification.useNotification();
   const { userInfo } = useAppStore();
   const [isOpenReposModal, setOpenReposModal] = useState(false);
   const router = useRouter();
@@ -273,6 +279,7 @@ const SetupPage = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [copiedElement, setCopiedElement] = useState<Element | null>(null);
   const [copiedElements, setCopiedElements] = useState<Element[]>([]);
+  const [layout, setLayout] = useState<Layout_API | null>(null);
   const [overlayMetaHistories, setOverlayMetaHistories] = useState<
     OverlayMetadata[]
   >([
@@ -299,10 +306,12 @@ const SetupPage = () => {
         const response = await axios({
           url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/${id}`,
           method: "GET",
+          withCredentials: true,
         });
         const data = response.data;
         const layoutApiDetails = data.data as Layout_API;
         const overlayMetadata = JSON.parse(layoutApiDetails.metadata);
+        setLayout(layoutApiDetails);
         setOverlayMetaHistories([overlayMetadata]);
       } catch (err) {
         router.push("/search");
@@ -1251,13 +1260,35 @@ const SetupPage = () => {
     setOverlayMetaHistories(updatedOverlayMetaHistories);
   };
 
-  const save = () => {
+  const createLayout = () => {
     if (userInfo) {
       setOpenSaveModal(true);
     } else {
       notification.open({
-        message: "You need to login to be able to save layout",
+        message: "You need to login to be able to create layout",
       });
+    }
+  };
+
+  const openNotification = (placement: NotificationPlacement) => {
+    api.info({
+      message: `Saved`,
+      description: "Save changed successfully.",
+      icon: <CheckCircleOutlined />,
+      placement,
+    });
+  };
+
+  const updateLayout = async () => {
+    if (!layout) return;
+    const respone = await LayoutService.updateLayout(
+      layout.id,
+      layout.name,
+      layout.tags,
+      overlayMetaHistories[currentHistoryIndex]
+    );
+    if (respone) {
+      setTimeout(() => openNotification("top"), 250);
     }
   };
 
@@ -1273,17 +1304,11 @@ const SetupPage = () => {
 
   const commit = async (repo: any) => {
     const code = getCode();
-    const data = {
-      code,
-      repo,
-    };
     if (!code) return;
-    const response = await axios({
-      url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/oauth/github-commit`,
-      withCredentials: true,
-      method: "POST",
-      data,
-    });
+    const response = await GithubService.commit(repo, code);
+    if (response) {
+      setTimeout(() => openNotification("top"), 250);
+    }
   };
 
   useEffect(() => {
@@ -1295,6 +1320,7 @@ const SetupPage = () => {
   if (isLoading) return <Loading />;
   return (
     <Container>
+      {contextHolder}
       <Header>
         <HeaderLeft>
           <button
@@ -1362,8 +1388,14 @@ const SetupPage = () => {
         <HeaderRight>
           {/* <button onClick={downloadLayout}>Tải layout</button> */}
           {/* <button onClick={generateCode}>Generate Code</button> */}
-          <button onClick={handleConnectRepo}>Commit to repo</button>
-          <button onClick={save}>Save layout</button>
+          {/* <button onClick={handleConnectRepo}>Commit to repo</button> */}
+          {layout && layout.status === "draft" ? (
+            userInfo?.id === layout.authorId ? (
+              <button onClick={updateLayout}>Save Changes</button>
+            ) : null
+          ) : (
+            <button onClick={createLayout}>Save As New</button>
+          )}
         </HeaderRight>
       </Header>
       <Body>

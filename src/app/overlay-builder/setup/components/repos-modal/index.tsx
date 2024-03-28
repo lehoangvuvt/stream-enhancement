@@ -1,5 +1,6 @@
 "use client";
 
+import GithubService from "@/services/github.service";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -18,13 +19,10 @@ const ReposModal: React.FC<Props> = ({ commit }) => {
 
   useEffect(() => {
     const getRepos = async () => {
-      const response = await axios({
-        method: "GET",
-        url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/auth/oauth/github-repos`,
-        withCredentials: true,
-      });
-      const data = response.data;
-      setRepos(data.data);
+      const response = await GithubService.getUserRepos();
+      if (response) {
+        setRepos(response);
+      }
     };
     getRepos();
   }, []);

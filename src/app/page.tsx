@@ -4,9 +4,9 @@ import styled from "styled-components";
 import { useRouter } from "next/navigation";
 import "./home.css";
 import bgGif from "/public/gif/bg.gif";
-import GradientBGColor from "@/components/gradient-bg-button";
 import Image from "next/image";
 import { useState } from "react";
+import GradientBorderButton from "@/components/gradient-border-button";
 
 const Container = styled.div`
   background-color: black;
@@ -101,7 +101,7 @@ export default function Home() {
                 marginTop: "30px",
               }}
             >
-              <GradientBGColor
+              <GradientBorderButton
                 onHover={() => {
                   setHoverMode("explore");
                 }}
@@ -110,8 +110,8 @@ export default function Home() {
                 onClick={() => router.push("/explore")}
               >
                 Explore
-              </GradientBGColor>
-              <GradientBGColor
+              </GradientBorderButton>
+              <GradientBorderButton
                 onHover={() => {
                   setHoverMode("create");
                 }}
@@ -120,7 +120,7 @@ export default function Home() {
                 onClick={() => router.push("/overlay-builder/setup")}
               >
                 Create
-              </GradientBGColor>
+              </GradientBorderButton>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { OverlayMetadata } from "@/app/overlay-builder/setup/page";
 import { Layout_API } from "@/types/element.types";
 import { UserInfo } from "@/zustand/store";
 import axios from "axios";
@@ -25,6 +26,42 @@ class LayoutService {
             const data = response.data;
             const items = data.data.items as Layout_API[];
             return items
+        } catch (err) {
+            return null
+        }
+    }
+    static async createLayout(name: string, tags: string[], metadata: OverlayMetadata) {
+        const data = {
+            metadata: JSON.stringify(metadata),
+            tags,
+            name,
+        };
+        try {
+            const response = await axios({
+                url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/create`,
+                method: "POST",
+                data,
+                withCredentials: true,
+            });
+            return response.data
+        } catch (err) {
+            return null
+        }
+    }
+    static async updateLayout(id: number, name: string, tags: string[], metadata: OverlayMetadata) {
+        const data = {
+            metadata: JSON.stringify(metadata),
+            tags,
+            name,
+        };
+        try {
+            const response = await axios({
+                url: `${process.env.NEXT_PUBLIC_API_BASE_ROUTE}/layout/update/${id}`,
+                method: "PUT",
+                data,
+                withCredentials: true,
+            });
+            return response.data
         } catch (err) {
             return null
         }

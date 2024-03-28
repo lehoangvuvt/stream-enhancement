@@ -1,6 +1,5 @@
 "use client";
 
-import GradientBGColor from "@/components/gradient-bg-button";
 import HeaderPanelLayout from "@/components/layouts/headerPanelLayout";
 import {
   ArrowRightOutlined,
@@ -12,6 +11,8 @@ import styled from "styled-components";
 import { useAppStore } from "@/zustand/store";
 import { useRouter } from "next/navigation";
 import UserService from "@/services/user.service";
+import GradientBorderButton from "@/components/gradient-border-button";
+import GradientBgButton from "@/components/gradient-bg-button";
 
 const Container = styled.div`
   width: 100%;
@@ -67,6 +68,7 @@ const SocialLoginContainer = styled.div`
   width: calc(50% - 50px);
   display: flex;
   flex-flow: column wrap;
+  justify-content: center;
   gap: 15px;
   button {
     width: 100%;
@@ -87,57 +89,12 @@ const SocialLoginContainer = styled.div`
   }
 `;
 
-const LoginButton = styled.button`
-  width: 100%;
-  padding: 20px 30px;
-  background-image: linear-gradient(
-    to right,
-    #00c299,
-    #d5cc73,
-    #00c299,
-    #d5cc73
-  );
-  background-size: 300% 300%;
-  background-position: 0% 100%;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  outline: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  filter: brightness(100%);
-  transition: padding 0.25s ease;
-  &:disabled {
-    filter: brightness(50%);
-    cursor: not-allowed;
-    &:hover {
-      animation: none;
-      padding: 20px 30px;
-    }
-  }
-  &:hover {
-    animation: LoginButtonHover 1s ease 0s;
-    padding: 20px 20px;
-    @keyframes LoginButtonHover {
-      from {
-        background-position: 0% 100%;
-      }
-      to {
-        background-position: 100% 100%;
-      }
-    }
-  }
-`;
-
 const Footer = styled.div`
   margin-top: 80px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
+  transition: all 0.2s ease;
   &:hover {
     color: white;
     text-decoration: underline;
@@ -231,9 +188,9 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
             />
-            <LoginButton disabled={!username || !password || isLoading}>
+            <GradientBgButton disabled={!username || !password || isLoading}>
               Login to Your Account <ArrowRightOutlined />
-            </LoginButton>
+            </GradientBgButton>
             {error && <ErrorMsg>{error}</ErrorMsg>}
           </NormalLoginContainer>
           <div
@@ -244,21 +201,21 @@ const Login = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontWeight: 400,
-              fontSize: "25px",
+              fontWeight: 600,
+              fontSize: "16px",
             }}
           >
-            /
+            OR
           </div>
           <SocialLoginContainer>
-            <GradientBGColor onClick={handleOAuthGoogle}>
+            {/* <GradientBorderButton onClick={handleOAuthGoogle}>
               <GoogleOutlined />
               Sign in with Google
-            </GradientBGColor>
-            <GradientBGColor onClick={handleOAuthGithub}>
+            </GradientBorderButton> */}
+            <GradientBorderButton onClick={handleOAuthGithub}>
               <GithubFilled />
               Sign in with Github
-            </GradientBGColor>
+            </GradientBorderButton>
           </SocialLoginContainer>
         </Body>
         <Footer
